@@ -3,11 +3,30 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace AdventOfCode2020
 {
     public class Generate
     {
+        static readonly HttpClient client = new HttpClient();
+
+        public static async Task<string> GetDayInput(int day)
+        {
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://adventofcode.com/2020/day/{day}/input");
+                var cookieFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Cookie.dat");
+                if (!File.Exists(cookieFile))
+                {
+                    Console.WriteLine($"Create a cookie file and call it: {cookieFile}");
+                }
+                var lines = File.ReadAllLines(cookieFile);
+                request.Headers.Add("Cookie", lines[0]);
+                HttpResponseMessage response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStringAsync();
+        }
+
         [Test]
         public void GenerateDay()
         {
@@ -18,7 +37,8 @@ namespace AdventOfCode2020
                 var file = Path.Combine(baseDir, "Input", $"{dayStr}.input");
                 if (!File.Exists(file))
                 {
-                    using var fs = File.Create(file);
+                    using (var fs = File.Create(file)) ;
+                    File.WriteAllText(file, GetDayInput(day).Result);
                 }
             }
             {
