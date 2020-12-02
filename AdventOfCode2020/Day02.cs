@@ -33,11 +33,6 @@ namespace AdventOfCode2020
         }
 
         [Test]
-        public void Part1_Example2()
-        {
-        }
-
-        [Test]
         public void Part1()
         {
             var count = 0;
@@ -59,16 +54,6 @@ namespace AdventOfCode2020
         }
 
         [Test]
-        public void Part2_Example1()
-        {
-        }
-
-        [Test]
-        public void Part2_Example2()
-        {
-        }
-
-        [Test]
         public void Part2()
         {
             var count = 0;
@@ -80,12 +65,10 @@ namespace AdventOfCode2020
                 var high = int.Parse(range[1]);
                 var c = split[1].First();
                 var password = split[2];
-                var check = password[low - 1].Equals(c) ? 1 : 0;
-                if (password[high -1].Equals(c))
+                if (password[low - 1].Equals(c) ^ password[high -1].Equals(c))
                 {
-                    check++;
+                    count++;
                 }
-                if (check == 1) count++;
             }
             Assert.AreEqual(745, count);
         }
