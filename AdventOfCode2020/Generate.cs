@@ -76,25 +76,25 @@ namespace AdventOfCode2020
                         writer.WriteLine("namespace AdventOfCode2020");
                         writer.WriteLine("{");
                         int pad = 1;
-                        Pad(writer, pad, $"public class {dayStr}");
-                        Pad(writer, pad, "{");
+                        WriteLine($"public class {dayStr}");
+                        WriteLine("{");
                         pad++;
 
                         foreach (var test in tests)
                         {
-                            Pad(writer, pad, "[Test]");
-                            Pad(writer, pad, $"public void {test}()");
-                            Pad(writer, pad, "{");
-                            Pad(writer, pad, "}");
+                            WriteLine("[Test]");
+                            WriteLine($"public void {test}()");
+                            WriteLine("{");
+                            WriteLine("}");
                             writer.WriteLine();
                         }
                         pad--;
-                        Pad(writer, pad, "}");
+                        WriteLine("}");
                         pad--;
-                        Pad(writer, pad, "}");
+                        WriteLine("}");
 
-                        string Padding(int p) => new String(' ', 4 * p);
-                        void Pad(StreamWriter w, int p, string str) => w.WriteLine($"{Padding(p)}{str}");
+                        string Padding() => new String(' ', 4 * pad);
+                        void WriteLine(string str) => writer.WriteLine($"{Padding()}{str}");
                     }
                 }
             }
