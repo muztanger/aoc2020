@@ -15,6 +15,12 @@ namespace AdventOfCode2020
             this.y = y;
         }
 
+        public Pos((int, int) z)
+        {
+            x = z.Item1;
+            y = z.Item2;
+        }
+
         public Pos(Pos other)
         {
             this.x = other.x;

@@ -63,10 +63,11 @@ namespace AdventOfCode2020
         public void Part2()
         {
             List<List<bool>> trees = Parse(Common.DayInput(nameof(Day03)));
+            var ps = new[] { (1, 1), (3, 1), (5, 1), (7, 1), (1, 2) };
             long prod = 1;
-            foreach (var d in new List<Pos>() { new Pos(1,1), new Pos(3, 1), new Pos(5, 1), new Pos(7, 1), new Pos(1, 2)})
+            foreach (var d in ps.Select( z => new Pos(z)))
             {
-                prod *= (long) Sum(d, trees);
+                prod *= Sum(d, trees);
             }
             Assert.AreEqual(3492520200L, prod);
         }
