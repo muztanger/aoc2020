@@ -11,13 +11,7 @@ namespace AdventOfCode2020
 
         private static List<List<bool>> Parse(IEnumerable<string> input)
         {
-            var trees = new List<List<bool>>();
-            foreach (var line in input)
-            {
-                var row = line.Select(x => x == '#').ToList();
-                trees.Add(row);
-            }
-            return trees;
+            return input.Select(line => line.Select(x => x == '#').ToList()).ToList();
         }
 
         public static int Sum(Pos d, List<List<bool>> trees)
