@@ -22,15 +22,16 @@ namespace AdventOfCode2020
 
         public static int Sum(Pos d, List<List<bool>> trees)
         {
-            int M = trees[0].Count;
+            int cols = trees[0].Count;
+            int rows = trees.Count;
+
             Pos p = new Pos(0, 0);
-            int N = trees.Count;
             int count = 0;
-            while (p.y < N)
+            while (p.y < rows)
             {
                 if (trees[p.y][p.x]) count++;
                 p += d;
-                p.x %= M;
+                p.x %= cols;
             }
             return count;
         }
