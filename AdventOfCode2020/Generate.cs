@@ -60,42 +60,61 @@ namespace AdventOfCode2020
                         "Part1_Example2",
                         "Part1",
                         "Part2_Example1",
-                        "Part2_Example2", "" +
+                        "Part2_Example2",
                         "Part2"
                     };
 
-                    using (var fs = File.Create(file))
-                    using (var writer = new StreamWriter(fs))
+                    using var fs = File.Create(file);
+                    using var writer = new StreamWriter(fs);
+
+                    foreach (var line in usings)
                     {
-                        
-                        foreach (var line in usings)
-                        {
-                            writer.WriteLine($"using {line};");
-                        }
-                        writer.WriteLine();
-                        writer.WriteLine("namespace AdventOfCode2020");
-                        writer.WriteLine("{");
-                        int pad = 1;
-                        WriteLine($"public class {dayStr}");
+                        writer.WriteLine($"using {line};");
+                    }
+
+                    writer.WriteLine();
+                    writer.WriteLine("namespace AdventOfCode2020");
+                    writer.WriteLine("{");
+                    int pad = 1;
+                    WriteLine($"public class {dayStr}");
+                    WriteLine("{");
+                    pad++;
+
+                    WriteLine("private static List<int> Parse(IEnumerable<string> input)");
+                    WriteLine("{");
+                    pad++;
+                    WriteLine("return new List<int>();");
+                    pad--;
+                    WriteLine("}");
+                    writer.WriteLine();
+
+                    foreach (var test in tests)
+                    {
+                        WriteLine("[Test]");
+                        WriteLine($"public void {test}()");
                         WriteLine("{");
                         pad++;
-
-                        foreach (var test in tests)
+                        if (test.Contains("Example"))
                         {
-                            WriteLine("[Test]");
-                            WriteLine($"public void {test}()");
-                            WriteLine("{");
-                            WriteLine("}");
-                            writer.WriteLine();
+                            WriteLine("string input = @\"\";");
+                            WriteLine("var parsed = Parse(Common.GetLines(input));");
                         }
+                        else
+                        {
+                            WriteLine($"var parsed = Parse(Common.DayInput(nameof({dayStr})));");
+                        }
+                        WriteLine("Assert.AreEqual(0, 1);");
                         pad--;
                         WriteLine("}");
-                        pad--;
-                        WriteLine("}");
-
-                        string Padding() => new String(' ', 4 * pad);
-                        void WriteLine(string str) => writer.WriteLine($"{Padding()}{str}");
+                        writer.WriteLine();
                     }
+                    pad--;
+                    WriteLine("}");
+                    pad--;
+                    WriteLine("}");
+
+                    string Padding() => new String(' ', 4 * pad);
+                    void WriteLine(string str) => writer.WriteLine($"{Padding()}{str}");
                 }
             }
         }
