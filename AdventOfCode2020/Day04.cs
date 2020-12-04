@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AdventOfCode2020
 {
@@ -10,27 +11,96 @@ namespace AdventOfCode2020
     {
         class Passport
         {
-            private Dictionary<string, int> rules = new Dictionary<string, int>()
+            static Func<string, bool> Byr = (str) =>
             {
-                {"byr", 1 },
-                {"iyr", 1 },
-                {"eyr", 1 },
-                {"hgt", 1 },
-                {"hcl", 1 },
-                {"ecl", 1 },
-                {"pid", 1 },
-                {"cid", 1 },
+                if (str.Length != 4) return false;
+                foreach (char c in str)
+                {
+                    if (!Char.IsDigit(c)) return false;
+                }
+                var num = int.Parse(str);
+                if (num < 1920 || num > 2002) return false;
+                return true;
             };
-            /*
-    byr (Birth Year)
-    iyr (Issue Year)
-    eyr (Expiration Year)
-    hgt (Height)
-    hcl (Hair Color)
-    ecl (Eye Color)
-    pid (Passport ID)
-    cid (Country ID)
-*/
+
+            static Func<string, bool> Iyr = (str) =>
+            {
+                if (str.Length != 4) return false;
+                foreach (char c in str)
+                {
+                    if (!Char.IsDigit(c)) return false;
+                }
+                var num = int.Parse(str);
+                if (num < 2010 || num > 2020) return false;
+                return true;
+            };
+
+            static Func<string, bool> Eyr = (str) =>
+            {
+                if (str.Length != 4) return false;
+                foreach (char c in str)
+                {
+                    if (!Char.IsDigit(c)) return false;
+                }
+                var num = int.Parse(str);
+                if (num < 2020 || num > 2030) return false;
+                return true;
+            };
+
+            static Func<string, bool> Hgt = (str) =>
+            {
+                var match = Regex.Match(str, @"^(\d+)(cm|in)$");
+                if (!match.Success) return false;
+                var num = int.Parse(match.Groups[1].Value);
+                if (match.Groups[2].Value.Equals("cm"))
+                {
+                    if (num < 150 || num > 193) return false;
+                }
+                else
+                {
+                    if (num < 59 || num > 76) return false;
+
+                }
+                return true;
+            };
+
+            static Func<string, bool> Hcl = (str) =>
+            {
+                var match = Regex.Match(str, @"^#[0-9a-f]{6}$");
+                if (!match.Success) return false;
+                return true;
+            };
+
+            static Func<string, bool> Ecl = (str) =>
+            {
+                var match = Regex.Match(str, @"^amb|blu|brn|gry|grn|hzl|oth$");
+                if (!match.Success) return false;
+                return true;
+            };
+
+            static Func<string, bool> Pid = (str) =>
+            {
+                var match = Regex.Match(str, @"^\d{9}$");
+                if (!match.Success) return false;
+                return true;
+            };
+
+            static Func<string, bool> Cid = (str) =>
+            {
+                return true;
+            };
+
+            private Dictionary<string, Func<string, bool>> rules = new Dictionary<string, Func<string, bool>>()
+            {
+                {"byr", Byr },
+                {"iyr", Iyr },
+                {"eyr", Eyr },
+                {"hgt", Hgt },
+                {"hcl", Hcl },
+                {"ecl", Ecl },
+                {"pid", Pid },
+                {"cid", Cid },
+            };
 
             public Dictionary<string, string> Fields = new Dictionary<string, string>();
             public bool Valid()
@@ -45,6 +115,32 @@ namespace AdventOfCode2020
                     if (!Fields.ContainsKey("cid")) return true; // not passport
                 }
                 return missingCount == 0;
+            }
+
+            public bool Valid2()
+            {
+                int missingCount = 0;
+                foreach (var kv in rules)
+                {
+                    if (!Fields.ContainsKey(kv.Key))
+                    {
+                        missingCount++;
+                    }
+                    else
+                    {
+                        if (!rules[kv.Key](Fields[kv.Key])) return false;
+                    }
+                }
+                if (missingCount == 1)
+                {
+                    if (!Fields.ContainsKey("cid")) return true; // not passport
+                }
+                return missingCount == 0;
+            }
+
+            public override string ToString()
+            {
+                return string.Join(", ", Fields.Select(kv => $"{kv.Key}: {kv.Value}"));
             }
         }
         private static List<Passport> Parse(IEnumerable<string> input)
@@ -122,16 +218,49 @@ iyr:2011 ecl:brn hgt:59in";
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
+            string input = @"eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007";
             var parsed = Parse(Common.GetLines(input));
+            foreach (var passport in parsed)
+            {
+                var valid = passport.Valid2();
+                Assert.IsFalse(valid, passport.ToString());
+            }
             Assert.AreEqual(0, 1);
         }
 
         [Test]
         public void Part2_Example2()
         {
-            string input = @"";
+            string input = @"pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
+
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
+
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
+
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
             var parsed = Parse(Common.GetLines(input));
+            foreach (var passport in parsed)
+            {
+                var valid = passport.Valid2();
+                Assert.IsTrue(valid, passport.ToString());
+            }
             Assert.AreEqual(0, 1);
         }
 
@@ -139,7 +268,13 @@ iyr:2011 ecl:brn hgt:59in";
         public void Part2()
         {
             var parsed = Parse(Common.DayInput(nameof(Day04)));
-            Assert.AreEqual(0, 1);
+            var count = 0;
+            foreach (var passport in parsed)
+            {
+                var valid = passport.Valid2();
+                if (valid) count++;
+            }
+            Assert.AreEqual(0, count);
         }
 
     }
