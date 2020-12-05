@@ -6,7 +6,7 @@ using System.Text;
 
 namespace AdventOfCode2020
 {
-    public class Square
+    public class Box
     {
         public Pos ColumnRange = new Pos(0, 7);
         public Pos RowRange = new Pos(0, 127);
@@ -69,7 +69,7 @@ namespace AdventOfCode2020
 
         public static Seat Parse(string line)
         {
-            var square = new Square();
+            var square = new Box();
             foreach (char c in line)
             {
                 switch (c)
