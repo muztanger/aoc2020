@@ -13,38 +13,23 @@ namespace AdventOfCode2020
         {
             static Func<string, bool> Byr = (str) =>
             {
-                if (str.Length != 4) return false;
-                foreach (char c in str)
-                {
-                    if (!Char.IsDigit(c)) return false;
-                }
+                if (!Regex.IsMatch(str, @"^\d{4}$")) return false;
                 var num = int.Parse(str);
-                if (num < 1920 || num > 2002) return false;
-                return true;
+                return num >= 1920 && num <= 2002;
             };
 
             static Func<string, bool> Iyr = (str) =>
             {
-                if (str.Length != 4) return false;
-                foreach (char c in str)
-                {
-                    if (!Char.IsDigit(c)) return false;
-                }
+                if (!Regex.IsMatch(str, @"^\d{4}$")) return false;
                 var num = int.Parse(str);
-                if (num < 2010 || num > 2020) return false;
-                return true;
+                return num >= 2010 && num <= 2020;
             };
 
             static Func<string, bool> Eyr = (str) =>
             {
-                if (str.Length != 4) return false;
-                foreach (char c in str)
-                {
-                    if (!Char.IsDigit(c)) return false;
-                }
+                if (!Regex.IsMatch(str, @"^\d{4}$")) return false;
                 var num = int.Parse(str);
-                if (num < 2020 || num > 2030) return false;
-                return true;
+                return num >= 2020 && num <= 2030;
             };
 
             static Func<string, bool> Hgt = (str) =>
@@ -64,31 +49,13 @@ namespace AdventOfCode2020
                 return true;
             };
 
-            static Func<string, bool> Hcl = (str) =>
-            {
-                var match = Regex.Match(str, @"^#[0-9a-f]{6}$");
-                if (!match.Success) return false;
-                return true;
-            };
+            static Func<string, bool> Hcl = (str) => Regex.IsMatch(str, @"^#[0-9a-f]{6}$");
 
-            static Func<string, bool> Ecl = (str) =>
-            {
-                var match = Regex.Match(str, @"^amb|blu|brn|gry|grn|hzl|oth$");
-                if (!match.Success) return false;
-                return true;
-            };
+            static Func<string, bool> Ecl = (str) => Regex.IsMatch(str, @"^amb|blu|brn|gry|grn|hzl|oth$");
 
-            static Func<string, bool> Pid = (str) =>
-            {
-                var match = Regex.Match(str, @"^\d{9}$");
-                if (!match.Success) return false;
-                return true;
-            };
+            static Func<string, bool> Pid = (str) => Regex.IsMatch(str, @"^\d{9}$");
 
-            static Func<string, bool> Cid = (str) =>
-            {
-                return true;
-            };
+            static Func<string, bool> Cid = (str) => true;
 
             private Dictionary<string, Func<string, bool>> rules = new Dictionary<string, Func<string, bool>>()
             {
@@ -186,20 +153,16 @@ hgt:179cm
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in";
             var parsed = Parse(Common.GetLines(input));
+            var expected = new Queue<bool>();
+            expected.Enqueue(true);
+            expected.Enqueue(false);
+            expected.Enqueue(true);
+            expected.Enqueue(false);
             foreach (var passport in parsed)
             {
                 var valid = passport.Valid();
-                Console.WriteLine(valid);
+                Assert.AreEqual(expected.Dequeue(), valid);
             }
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
         }
 
         [Test]
@@ -212,7 +175,7 @@ iyr:2011 ecl:brn hgt:59in";
                 var valid = passport.Valid();
                 if (valid) count++;
             }
-            Assert.AreEqual(0, count);
+            Assert.AreEqual(239, count);
         }
 
         [Test]
@@ -237,7 +200,6 @@ pid:3556412378 byr:2007";
                 var valid = passport.Valid2();
                 Assert.IsFalse(valid, passport.ToString());
             }
-            Assert.AreEqual(0, 1);
         }
 
         [Test]
@@ -261,7 +223,6 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
                 var valid = passport.Valid2();
                 Assert.IsTrue(valid, passport.ToString());
             }
-            Assert.AreEqual(0, 1);
         }
 
         [Test]
@@ -274,7 +235,7 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
                 var valid = passport.Valid2();
                 if (valid) count++;
             }
-            Assert.AreEqual(0, count);
+            Assert.AreEqual(188, count);
         }
 
     }

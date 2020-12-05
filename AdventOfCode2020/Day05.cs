@@ -18,8 +18,8 @@ namespace AdventOfCode2020
 
         public static Seat Parse(string line)
         {
-            var ul = new Pos(0, 0);
-            var lr = new Pos(7, 127);
+            var upperLeft = new Pos(0, 0);
+            var lowerRight = new Pos(7, 127);
             var height = 128;
             var width = 8;
             foreach (char c in line)
@@ -30,45 +30,45 @@ namespace AdventOfCode2020
                         height /= 2;
                         if (height == 1)
                         {
-                            var min = Math.Min(ul.y, lr.y);
-                            ul.y = min;
-                            lr.y = min;
+                            var min = Math.Min(upperLeft.y, lowerRight.y);
+                            upperLeft.y = min;
+                            lowerRight.y = min;
                         }
                         else
-                            lr.y -= height;
+                            lowerRight.y -= height;
                         break;
                     case 'B':
                         height /= 2;
                         if (height == 1)
                         {
-                            var max = Math.Max(ul.y, lr.y);
-                            ul.y = max;
-                            lr.y = max;
+                            var max = Math.Max(upperLeft.y, lowerRight.y);
+                            upperLeft.y = max;
+                            lowerRight.y = max;
                         }
                         else
-                            ul.y += height;
+                            upperLeft.y += height;
                         break;
                     case 'L':
                         width /= 2;
                         if (width == 1)
                         {
-                            var min = Math.Min(ul.x, lr.x);
-                            ul.x = min;
-                            lr.x = min;
+                            var min = Math.Min(upperLeft.x, lowerRight.x);
+                            upperLeft.x = min;
+                            lowerRight.x = min;
                         }
                         else
-                            lr.x -= width;
+                            lowerRight.x -= width;
                         break;
                     case 'R':
                         width /= 2;
                         if (width == 1)
                         {
-                            var max = Math.Max(ul.x, lr.x);
-                            ul.x = max;
-                            lr.x = max;
+                            var max = Math.Max(upperLeft.x, lowerRight.x);
+                            upperLeft.x = max;
+                            lowerRight.x = max;
                         }
                         else
-                            ul.x += width;
+                            upperLeft.x += width;
                         break;
                     default:
                         Console.WriteLine("Unhandled");
@@ -78,8 +78,8 @@ namespace AdventOfCode2020
             }
             var result = new Seat
             {
-                Column = lr.x,
-                Row = lr.y
+                Column = lowerRight.x,
+                Row = lowerRight.y
             };
             return result;
         }
