@@ -37,7 +37,6 @@ namespace AdventOfCode2020
                 var file = Path.Combine(baseDir, "Input", $"{dayStr}.input");
                 if (!File.Exists(file))
                 {
-                    using var fs = File.Create(file);
                     File.WriteAllText(file, GetDayInput(day).Result);
                 }
             }
