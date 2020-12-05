@@ -109,10 +109,14 @@ namespace AdventOfCode2020
             string input = @"BFFFBBFRRR
 FFFBBBFRRR
 BBFFBBFRLL";
+            var expected = new Queue<int>();
+            expected.Enqueue(567);
+            expected.Enqueue(119);
+            expected.Enqueue(820);
             foreach (var line in Common.GetLines(input))
             {
                 var seat = Seat.Parse(line);
-                Console.WriteLine(seat);
+                Assert.AreEqual(expected.Dequeue(), seat.Id);
             }
         }
 
