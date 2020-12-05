@@ -6,277 +6,131 @@ using System.Text;
 
 namespace AdventOfCode2020
 {
-    public class Day05
+    public class Seat
     {
-        private static List<string> Parse(IEnumerable<string> input)
+        public int Row;
+        public int Column;
+        public int Id =>  Row * 8 + Column;
+        public override string ToString()
         {
-            return new List<string>(input);
+            return $"row {Row}, column {Column}, seat ID {Id}";
         }
 
+        public static Seat Parse(string line)
+        {
+            var ul = new Pos(0, 0);
+            var lr = new Pos(7, 127);
+            var height = 128;
+            var width = 8;
+            foreach (char c in line)
+            {
+                switch (c)
+                {
+                    case 'F':
+                        height /= 2;
+                        if (height == 1)
+                        {
+                            var min = Math.Min(ul.y, lr.y);
+                            ul.y = min;
+                            lr.y = min;
+                        }
+                        else
+                            lr.y -= height;
+                        break;
+                    case 'B':
+                        height /= 2;
+                        if (height == 1)
+                        {
+                            var max = Math.Max(ul.y, lr.y);
+                            ul.y = max;
+                            lr.y = max;
+                        }
+                        else
+                            ul.y += height;
+                        break;
+                    case 'L':
+                        width /= 2;
+                        if (width == 1)
+                        {
+                            var min = Math.Min(ul.x, lr.x);
+                            ul.x = min;
+                            lr.x = min;
+                        }
+                        else
+                            lr.x -= width;
+                        break;
+                    case 'R':
+                        width /= 2;
+                        if (width == 1)
+                        {
+                            var max = Math.Max(ul.x, lr.x);
+                            ul.x = max;
+                            lr.x = max;
+                        }
+                        else
+                            ul.x += width;
+                        break;
+                    default:
+                        Console.WriteLine("Unhandled");
+                        break;
+                }
+
+            }
+            var result = new Seat
+            {
+                Column = lr.x,
+                Row = lr.y
+            };
+            return result;
+        }
+    }
+
+    public class Day05
+    {
         [Test]
         public void Part1_Example1()
         {
-            // F Front
-            // B BAck
-            // L Left
-            // R Right
-            // 128 rows
-            // seat ID: row * 8 + column
             string input = @"BFFFBBFRRR
 FFFBBBFRRR
 BBFFBBFRLL";
-            var parsed = Parse(Common.GetLines(input));
-            foreach (var line in parsed)
+            foreach (var line in Common.GetLines(input))
             {
-                var ul = new Pos(0, 0);
-                var lr = new Pos(7, 127);
-                var height = 128;
-                var width = 8;
-                foreach (char c in line)
-                {
-                    switch (c)
-                    {
-                        case 'F':
-                            height /= 2;
-                            if (height == 1)
-                            {
-                                var min = Math.Min(ul.y, lr.y);
-                                ul.y = min;
-                                lr.y = min;
-                            }
-                            else
-                                lr.y -= height;
-                            break;
-                        case 'B':
-                            height /= 2;
-                            if (height == 1)
-                            {
-                                var max = Math.Max(ul.y, lr.y);
-                                ul.y = max;
-                                lr.y = max;
-                            }
-                            else
-                                ul.y += height;
-                            break;
-                        case 'L':
-                            width /= 2;
-                            if (width == 1)
-                            {
-                                var min = Math.Min(ul.x, lr.x);
-                                ul.x = min;
-                                lr.x = min;
-                            }
-                            else
-                                lr.x -= width;
-                            break;
-                        case 'R':
-                            width /= 2;
-                            if (width == 1)
-                            {
-                                var max = Math.Max(ul.x, lr.x);
-                                ul.x = max;
-                                lr.x = max;
-                            }
-                            else
-                                ul.x += width;
-                            break;
-                        default:
-                            Console.WriteLine("Unhandled");
-                            break;
-                    }
-                    
-                    Console.WriteLine($"{c}: ul={ul} lr={lr} widht={width} height={height}");
-                }
-                Console.WriteLine($"{ul} {lr}");
+                var seat = Seat.Parse(line);
+                Console.WriteLine(seat);
             }
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
         }
 
         [Test]
         public void Part1()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day05)));
             var maxSeat = -1;
-            foreach (var line in parsed)
+            foreach (var line in Common.DayInput(nameof(Day05)))
             {
-                var ul = new Pos(0, 0);
-                var lr = new Pos(7, 127);
-                var height = 128;
-                var width = 8;
-                foreach (char c in line)
-                {
-                    switch (c)
-                    {
-                        case 'F':
-                            height /= 2;
-                            if (height == 1)
-                            {
-                                var min = Math.Min(ul.y, lr.y);
-                                ul.y = min;
-                                lr.y = min;
-                            }
-                            else
-                                lr.y -= height;
-                            break;
-                        case 'B':
-                            height /= 2;
-                            if (height == 1)
-                            {
-                                var max = Math.Max(ul.y, lr.y);
-                                ul.y = max;
-                                lr.y = max;
-                            }
-                            else
-                                ul.y += height;
-                            break;
-                        case 'L':
-                            width /= 2;
-                            if (width == 1)
-                            {
-                                var min = Math.Min(ul.x, lr.x);
-                                ul.x = min;
-                                lr.x = min;
-                            }
-                            else
-                                lr.x -= width;
-                            break;
-                        case 'R':
-                            width /= 2;
-                            if (width == 1)
-                            {
-                                var max = Math.Max(ul.x, lr.x);
-                                ul.x = max;
-                                lr.x = max;
-                            }
-                            else
-                                ul.x += width;
-                            break;
-                        default:
-                            Console.WriteLine("Unhandled");
-                            break;
-                    }
-
-                    Console.WriteLine($"{c}: ul={ul} lr={lr} widht={width} height={height}");
-                }
-                Console.WriteLine($"{ul} {lr}");
-                var seat = lr.y * 8 + lr.x;
-                maxSeat = Math.Max(maxSeat, seat);
+                var seatClass = Seat.Parse(line);
+                maxSeat = Math.Max(maxSeat, seatClass.Id);
             }
+
             Assert.AreEqual(989, maxSeat);
-        }
-
-        [Test]
-        public void Part2_Example1()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
         }
 
         [Test]
         public void Part2()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day05)));
-            var maxSeat = int.MinValue;
-            var minSeat = int.MaxValue;
-            var taken = new SortedSet<int>();
-            foreach (var line in parsed)
+            var max = int.MinValue;
+            var min = int.MaxValue;
+            var sum = 0;
+            foreach (var line in Common.DayInput(nameof(Day05)))
             {
-                var ul = new Pos(0, 0);
-                var lr = new Pos(7, 127);
-                var height = 128;
-                var width = 8;
-                foreach (char c in line)
-                {
-                    switch (c)
-                    {
-                        case 'F':
-                            height /= 2;
-                            if (height == 1)
-                            {
-                                var min = Math.Min(ul.y, lr.y);
-                                ul.y = min;
-                                lr.y = min;
-                            }
-                            else
-                                lr.y -= height;
-                            break;
-                        case 'B':
-                            height /= 2;
-                            if (height == 1)
-                            {
-                                var max = Math.Max(ul.y, lr.y);
-                                ul.y = max;
-                                lr.y = max;
-                            }
-                            else
-                                ul.y += height;
-                            break;
-                        case 'L':
-                            width /= 2;
-                            if (width == 1)
-                            {
-                                var min = Math.Min(ul.x, lr.x);
-                                ul.x = min;
-                                lr.x = min;
-                            }
-                            else
-                                lr.x -= width;
-                            break;
-                        case 'R':
-                            width /= 2;
-                            if (width == 1)
-                            {
-                                var max = Math.Max(ul.x, lr.x);
-                                ul.x = max;
-                                lr.x = max;
-                            }
-                            else
-                                ul.x += width;
-                            break;
-                        default:
-                            Console.WriteLine("Unhandled");
-                            break;
-                    }
+                var seat = Seat.Parse(line);
+                max = Math.Max(max, seat.Id);
+                min = Math.Min(min, seat.Id);
+                sum += seat.Id;
+            }
+            var result = ConSum(max) - ConSum(min - 1) - sum;
 
-                    Console.WriteLine($"{c}: ul={ul} lr={lr} widht={width} height={height}");
-                }
-                Console.WriteLine($"{ul} {lr}");
-                var seat = lr.y * 8 + lr.x;
-                maxSeat = Math.Max(maxSeat, seat);
-                minSeat = Math.Min(minSeat, seat);
-                taken.Add(seat);
-            }
-            var z = taken.First();
-            var result = int.MinValue;
-            Console.WriteLine(string.Join(",", taken));
-            foreach (var q in taken.Skip(1))
-            {
-                if (z + 1 != q)
-                {
-                    result = z + 1;
-                    break;
-                }
-                z = q;
-            }
+            static int ConSum(int n) => n * (n + 1) / 2;
+
             Assert.AreEqual(548, result);
-
         }
 
     }
