@@ -6,6 +6,57 @@ using System.Text;
 
 namespace AdventOfCode2020
 {
+    public class Square
+    {
+        public Pos ColumnRange = new Pos(0, 7);
+        public Pos RowRange = new Pos(0, 127);
+        public int Width => ColumnRange.Dist() + 1;
+        public int Height => RowRange.Dist() + 1;
+        public void SplitF()
+        {
+            var height = Height / 2;
+            if (height > 1)
+            {
+                RowRange.y -= height;
+            }
+        }
+
+        public void SplitB()
+        {
+            var height = Height / 2;
+            if (height > 1)
+            {
+                RowRange.x += height;
+            }
+            else
+            {
+                RowRange.x = RowRange.y;
+            }
+        }
+        public void SplitL()
+        {
+            var width = Width / 2;
+            if (width > 1)
+            {
+                ColumnRange.y -= width;
+            }
+        }
+
+        public void SplitR()
+        {
+            var width = Width / 2;
+            if (width > 1)
+            {
+                ColumnRange.x += width;
+            }
+            else
+            {
+                ColumnRange.x = ColumnRange.y;
+            }
+        }
+
+    }
+
     public class Seat
     {
         public int Row;
@@ -18,57 +69,22 @@ namespace AdventOfCode2020
 
         public static Seat Parse(string line)
         {
-            var upperLeft = new Pos(0, 0);
-            var lowerRight = new Pos(7, 127);
-            var height = 128;
-            var width = 8;
+            var square = new Square();
             foreach (char c in line)
             {
                 switch (c)
                 {
                     case 'F':
-                        height /= 2;
-                        if (height == 1)
-                        {
-                            var min = Math.Min(upperLeft.y, lowerRight.y);
-                            upperLeft.y = min;
-                            lowerRight.y = min;
-                        }
-                        else
-                            lowerRight.y -= height;
+                        square.SplitF();
                         break;
                     case 'B':
-                        height /= 2;
-                        if (height == 1)
-                        {
-                            var max = Math.Max(upperLeft.y, lowerRight.y);
-                            upperLeft.y = max;
-                            lowerRight.y = max;
-                        }
-                        else
-                            upperLeft.y += height;
+                        square.SplitB();
                         break;
                     case 'L':
-                        width /= 2;
-                        if (width == 1)
-                        {
-                            var min = Math.Min(upperLeft.x, lowerRight.x);
-                            upperLeft.x = min;
-                            lowerRight.x = min;
-                        }
-                        else
-                            lowerRight.x -= width;
+                        square.SplitL();
                         break;
                     case 'R':
-                        width /= 2;
-                        if (width == 1)
-                        {
-                            var max = Math.Max(upperLeft.x, lowerRight.x);
-                            upperLeft.x = max;
-                            lowerRight.x = max;
-                        }
-                        else
-                            upperLeft.x += width;
+                        square.SplitR();
                         break;
                     default:
                         Console.WriteLine("Unhandled");
@@ -78,8 +94,8 @@ namespace AdventOfCode2020
             }
             var result = new Seat
             {
-                Column = lowerRight.x,
-                Row = lowerRight.y
+                Column = square.ColumnRange.x,
+                Row = square.RowRange.x
             };
             return result;
         }

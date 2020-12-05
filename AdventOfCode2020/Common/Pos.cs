@@ -27,6 +27,11 @@ namespace AdventOfCode2020
             this.y = other.y;
         }
 
+        public int Dist()
+        {
+            return Math.Abs(y - x);
+        }
+
         public static Pos operator *(Pos p1, int n)
         {
             return new Pos(p1.x * n, p1.y * n);
