@@ -63,10 +63,7 @@ namespace AdventOfCode2020
                         {
                             next.Add(c);
                         }
-                        Console.WriteLine($"group={string.Join(",", group)}");
-                        Console.WriteLine($"next={string.Join(",", next)}");
                         group = group.Intersect(next).ToHashSet();
-                        Console.WriteLine($"after: group={string.Join(",", group)}");
                     }
                 }
             }
@@ -98,15 +95,7 @@ b";
             {
                 sum += group.Count;
             }
-            Assert.AreEqual(0, sum);
-        }
-
-        [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            Assert.AreEqual(11, sum);
         }
 
         [Test]
@@ -118,7 +107,7 @@ b";
             {
                 sum += group.Count;
             }
-            Assert.AreEqual(0, sum);
+            Assert.AreEqual(6885, sum);
         }
 
         [Test]
@@ -145,15 +134,7 @@ b";
             {
                 sum += group.Count;
             }
-            Assert.AreEqual(0, sum);
-        }
-
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            Assert.AreEqual(6, sum);
         }
 
         [Test]
@@ -165,7 +146,7 @@ b";
             {
                 sum += group.Count;
             }
-            Assert.AreEqual(0, sum);
+            Assert.AreEqual(3550, sum);
         }
 
     }
