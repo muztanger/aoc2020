@@ -36,8 +36,7 @@ namespace AdventOfCode2020
         {
             var result = new List<HashSet<char>>();
             var group = new HashSet<char>();
-
-            bool isFirst = true;
+            var isFirst = true;
             foreach (var line in input)
             {
                 if (!line.Any())
@@ -50,19 +49,12 @@ namespace AdventOfCode2020
                 {
                     if (isFirst)
                     {
-                        foreach (char c in line)
-                        {
-                            group.Add(c);
-                        }
+                        group = line.Select(x => x).ToHashSet();
                         isFirst = false;
                     }
                     else
                     {
-                        var next = new HashSet<char>();
-                        foreach (char c in line)
-                        {
-                            next.Add(c);
-                        }
+                        var next = line.Select(c => c).ToHashSet();
                         group = group.Intersect(next).ToHashSet();
                     }
                 }
