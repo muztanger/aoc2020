@@ -45,18 +45,15 @@ namespace AdventOfCode2020
                     group = new HashSet<char>();
                     isFirst = true;
                 }
+                else if (isFirst)
+                {
+                    group = line.Select(x => x).ToHashSet();
+                    isFirst = false;
+                }
                 else
                 {
-                    if (isFirst)
-                    {
-                        group = line.Select(x => x).ToHashSet();
-                        isFirst = false;
-                    }
-                    else
-                    {
-                        var next = line.Select(c => c).ToHashSet();
-                        group = group.Intersect(next).ToHashSet();
-                    }
+                    var next = line.Select(c => c).ToHashSet();
+                    group = group.Intersect(next).ToHashSet();
                 }
             }
             result.Add(group);
