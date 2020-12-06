@@ -8,31 +8,7 @@ namespace AdventOfCode2020
 {
     public class Day06
     {
-
-        private static List<HashSet<char>> Parse(IEnumerable<string> input)
-        {
-            var result = new List<HashSet<char>>();
-            var group = new HashSet<char>();
-            foreach (var line in input)
-            {
-                if (!line.Any())
-                {
-                    result.Add(group);
-                    group = new HashSet<char>();
-                }
-                else
-                {
-                    foreach (char c in line)
-                    {
-                        group.Add(c);
-                    }
-                }
-            }
-            result.Add(group);
-            return result;
-        }
-
-        private static List<HashSet<char>> Parse2(IEnumerable<string> input)
+        private static List<HashSet<char>> Parse(IEnumerable<string> input, bool isIntersect = false)
         {
             var result = new List<HashSet<char>>();
             var group = new HashSet<char>();
@@ -52,8 +28,14 @@ namespace AdventOfCode2020
                 }
                 else
                 {
-                    var next = line.Select(c => c).ToHashSet();
-                    group = group.Intersect(next).ToHashSet();
+                    if (isIntersect)
+                    {
+                        group = group.Intersect(line.Select(c => c)).ToHashSet();
+                    }
+                    else
+                    {
+                        group = group.Union(line.Select(c => c)).ToHashSet();
+                    }
                 }
             }
             result.Add(group);
@@ -117,7 +99,7 @@ a
 a
 
 b";
-            var parsed = Parse2(Common.GetLines(input));
+            var parsed = Parse(Common.GetLines(input), isIntersect: true);
             int sum = 0;
             foreach (var group in parsed)
             {
@@ -129,7 +111,7 @@ b";
         [Test]
         public void Part2()
         {
-            var parsed = Parse2(Common.DayInput(nameof(Day06)));
+            var parsed = Parse(Common.DayInput(nameof(Day06)), isIntersect: true);
             int sum = 0;
             foreach (var group in parsed)
             {
