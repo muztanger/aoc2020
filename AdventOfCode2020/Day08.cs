@@ -10,13 +10,44 @@ namespace AdventOfCode2020
     {
         public class GameConsole
         {
+            public enum Operation { Acc, Jmp, Nop };
+            public class Instruction
+            {
+                public Operation Op { get; set; }
+                public int Value { get; set; }
+                public static Instruction Parse(string line)
+                {
+                    var split = line.Split();
+                    var instructionStr = split[0];
+                    var oper = instructionStr switch
+                    {
+                        "nop" => Operation.Nop,
+                        "acc" => Operation.Acc,
+                        "jmp" => Operation.Jmp,
+                        _ => throw new NotImplementedException(instructionStr),
+                    };
+                    var x = int.Parse(split[1]);
+                    return new Instruction()
+                    {
+                        Op = oper,
+                        Value = x
+                    };
+                }
+
+                public override string ToString()
+                {
+                    return $"{Op} {Value}";
+                }
+            }
+
             private int mAccumulator;
             private int mIndex;
-            private List<string> mProgram;
+            private List<Instruction> mProgram;
+
 
             public GameConsole(List<string> program)
             {
-                this.mProgram = program;
+                mProgram = program.Select(str => Instruction.Parse(str)).ToList();
             }
 
             /**
@@ -58,16 +89,14 @@ namespace AdventOfCode2020
                 while (!mem.Contains(mIndex))
                 {
                     mem.Add(mIndex);
-                    var split = mProgram[mIndex].Split();
-                    var instruction = split[0];
-                    var x = int.Parse(split[1]);
-                    Console.WriteLine($"mProgram[mIndex]={mProgram[mIndex]} instruction={instruction} x={x}");
-                    switch (instruction)
+                    Console.WriteLine($"mProgram[mIndex]: {mProgram[mIndex]}");
+                    var instruction = mProgram[mIndex];
+                    switch (instruction.Op)
                     {
-                        case "nop": Nop(x); break;
-                        case "acc": Acc(x); break;
-                        case "jmp": Jmp(x); break;
-                        default: throw new NotImplementedException(instruction);
+                        case Operation.Nop: Nop(instruction.Value); break;
+                        case Operation.Acc: Acc(instruction.Value); break;
+                        case Operation.Jmp: Jmp(instruction.Value); break;
+                        default: throw new NotImplementedException();
                     }
                 }
                 return mAccumulator;
@@ -99,19 +128,11 @@ acc +6";
         }
 
         [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
         public void Part1()
         {
             var parsed = Parse(Common.DayInput(nameof(Day08)));
             var game = new GameConsole(parsed);
-            Assert.AreEqual(0, game.Exec());
+            Assert.AreEqual(1584, game.Exec());
         }
 
         [Test]
