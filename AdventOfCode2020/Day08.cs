@@ -206,7 +206,7 @@ acc +6";
                 }
                 catch (TimeoutException)
                 {
-                    Console.WriteLine($"index={index} timeout");
+                    Console.WriteLine($"index: {index} timeout");
                 }
                 game.Flip(index);
             }
