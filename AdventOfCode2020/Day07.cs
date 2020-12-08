@@ -156,8 +156,19 @@ dotted black bags contain no other bags.";
         [Test]
         public void Part1()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day07)));
-            Assert.AreEqual(0, 1);
+            var bags = Parse(Common.DayInput(nameof(Day07)));
+
+            var count = 0;
+            var nonShinyBags = bags.Where(x => !x.Color.Equals("shiny gold")).ToHashSet();
+            foreach (var bag in nonShinyBags)
+            {
+                if (bag.Contains("shiny gold", nonShinyBags))
+                {
+                    count++;
+                }
+                Console.WriteLine(bag);
+            }
+            Assert.AreEqual(4, count);
         }
 
         [Test]
