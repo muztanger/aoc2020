@@ -43,17 +43,19 @@ namespace AdventOfCode2020
                 return result;
             }
 
-            public bool Contains(string otherColor, List<Bag> bags)
+            public bool Contains(string otherColor, HashSet<Bag> bags)
             {
                 if (color.Equals(otherColor)) return true;
-                if (subBags.ContainsKey(new Bag(color))) return true;
+                if (subBags.ContainsKey(new Bag(otherColor))) return true;
                 foreach (var kv in subBags)
                 {
-                    foreach (var bag in bags.Where(k => k.Equals(kv.Key)))
+                    if (bags.TryGetValue(kv.Key, out var bag))
                     {
-                        
+                        if (bag.Contains(otherColor, bags))
+                        {
+                            return true;
+                        }
                     }
-
                 }
                 return false;
             }
@@ -106,9 +108,9 @@ namespace AdventOfCode2020
 
         }
 
-        private static List<Bag> Parse(IEnumerable<string> input)
+        private static HashSet<Bag> Parse(IEnumerable<string> input)
         {
-            var result = new List<Bag>();
+            var result = new HashSet<Bag>();
             foreach (var line in input)
             {
                 result.Add(Bag.Parse(line));
@@ -130,12 +132,17 @@ faded blue bags contain no other bags.
 dotted black bags contain no other bags.";
             var bags = Parse(Common.GetLines(input));
 
-            foreach (var bag in bags.Where(x => !x.Color.Equals("shiny gold")))
+            var count = 0;
+            var nonShinyBags = bags.Where(x => !x.Color.Equals("shiny gold")).ToHashSet();
+            foreach (var bag in nonShinyBags)
             {
-                //bag.Contains("shiny gold", bags.Where(x => !x.Color.Equals("shiny gold")).ToHashSet());
+                if (bag.Contains("shiny gold", nonShinyBags))
+                {
+                    count++;
+                }
                 Console.WriteLine(bag);
             }
-            Assert.AreEqual(0, 1);
+            Assert.AreEqual(4, count);
         }
 
         [Test]
