@@ -60,6 +60,19 @@ namespace AdventOfCode2020
                 return false;
             }
 
+            public int Count(HashSet<Bag> bags)
+            {
+                int count = 1;
+                foreach (var bag in subBags)
+                {
+                    if (bags.TryGetValue(bag.Key, out var subBag))
+                    {
+                        count += bag.Value * subBag.Count(bags);
+                    }
+                }
+                return count;
+            }
+
             public override string ToString()
             {
                 var result = new StringBuilder();
@@ -105,19 +118,6 @@ namespace AdventOfCode2020
             {
                 return !(left == right);
             }
-
-            internal int Count(HashSet<Bag> bags)
-            {
-                int count = 1;
-                foreach (var bag in subBags)
-                {
-                    if (bags.TryGetValue(bag.Key, out var subBag))
-                    {
-                        count += bag.Value * subBag.Count(bags);
-                    }
-                }
-                return count;
-            }
         }
 
         private static HashSet<Bag> Parse(IEnumerable<string> input)
@@ -155,14 +155,6 @@ dotted black bags contain no other bags.";
                 Console.WriteLine(bag);
             }
             Assert.AreEqual(4, count);
-        }
-
-        [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
         }
 
         [Test]
