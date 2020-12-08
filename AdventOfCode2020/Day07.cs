@@ -106,6 +106,18 @@ namespace AdventOfCode2020
                 return !(left == right);
             }
 
+            internal int Count(HashSet<Bag> bags)
+            {
+                int count = 1;
+                foreach (var bag in subBags)
+                {
+                    if (bags.TryGetValue(bag.Key, out var subBag))
+                    {
+                        count += bag.Value * subBag.Count(bags);
+                    }
+                }
+                return count;
+            }
         }
 
         private static HashSet<Bag> Parse(IEnumerable<string> input)
@@ -174,24 +186,56 @@ dotted black bags contain no other bags.";
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            string input = @"light red bags contain 1 bright white bag, 2 muted yellow bags.
+dark orange bags contain 3 bright white bags, 4 muted yellow bags.
+bright white bags contain 1 shiny gold bag.
+muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
+shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
+dark olive bags contain 3 faded blue bags, 4 dotted black bags.
+vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
+faded blue bags contain no other bags.
+dotted black bags contain no other bags.";
+            var bags = Parse(Common.GetLines(input));
+            int count = -1;
+            if (bags.TryGetValue(new Bag("shiny gold"), out var shinyGold))
+            {
+                count = shinyGold.Count(bags);
+            }
+            
+            Assert.AreEqual(32, count - 1);
         }
 
         [Test]
         public void Part2_Example2()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            string input = @"shiny gold bags contain 2 dark red bags.
+dark red bags contain 2 dark orange bags.
+dark orange bags contain 2 dark yellow bags.
+dark yellow bags contain 2 dark green bags.
+dark green bags contain 2 dark blue bags.
+dark blue bags contain 2 dark violet bags.
+dark violet bags contain no other bags.";
+            var bags = Parse(Common.GetLines(input));
+            int count = -1;
+            if (bags.TryGetValue(new Bag("shiny gold"), out var shinyGold))
+            {
+                count = shinyGold.Count(bags);
+            }
+
+            Assert.AreEqual(126, count - 1);
         }
 
         [Test]
         public void Part2()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day07)));
-            Assert.AreEqual(0, 1);
+            var bags = Parse(Common.DayInput(nameof(Day07)));
+            int count = -1;
+            if (bags.TryGetValue(new Bag("shiny gold"), out var shinyGold))
+            {
+                count = shinyGold.Count(bags);
+            }
+
+            Assert.AreEqual(126, count - 1);
         }
 
     }
