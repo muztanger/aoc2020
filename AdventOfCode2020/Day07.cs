@@ -172,7 +172,7 @@ dotted black bags contain no other bags.";
                 }
                 Console.WriteLine(bag);
             }
-            Assert.AreEqual(4, count);
+            Assert.AreEqual(124, count);
         }
 
         [Test]
@@ -227,7 +227,7 @@ dark violet bags contain no other bags.";
                 count = shinyGold.Count(bags);
             }
 
-            Assert.AreEqual(126, count - 1);
+            Assert.AreEqual(34862, count - 1);
         }
 
     }
