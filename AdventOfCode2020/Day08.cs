@@ -50,6 +50,12 @@ namespace AdventOfCode2020
                 mProgram = program.Select(str => Instruction.Parse(str)).ToList();
             }
 
+            public void Reset()
+            {
+                mIndex = 0;
+                mAccumulator = 0;
+            }
+
             /**
              *     acc increases or decreases a single global value called the accumulator 
              *     by the value given in the argument. For example, acc +7 would 
@@ -89,7 +95,39 @@ namespace AdventOfCode2020
                 while (!mem.Contains(mIndex))
                 {
                     mem.Add(mIndex);
-                    Console.WriteLine($"mProgram[mIndex]: {mProgram[mIndex]}");
+                    var instruction = mProgram[mIndex];
+                    switch (instruction.Op)
+                    {
+                        case Operation.Nop: Nop(instruction.Value); break;
+                        case Operation.Acc: Acc(instruction.Value); break;
+                        case Operation.Jmp: Jmp(instruction.Value); break;
+                        default: throw new NotImplementedException();
+                    }
+                }
+                return mAccumulator;
+            }
+
+            public void Flip(int index)
+            {
+                mProgram[index].Op = mProgram[index].Op switch
+                {
+                    Operation.Jmp => Operation.Nop,
+                    Operation.Nop => Operation.Jmp,
+                    _ => throw new Exception("invalid instruction"),
+                };
+            }
+
+            public int Exec2()
+            {
+                Reset();
+
+                var mem = new Dictionary<int, int>();
+                while (mIndex != mProgram.Count)
+                {
+                    mem.TryGetValue(mIndex, out var count);
+                    mem[mIndex] = ++count;
+                    if (count >= 100) throw new TimeoutException();
+
                     var instruction = mProgram[mIndex];
                     switch (instruction.Op)
                     {
@@ -138,24 +176,77 @@ acc +6";
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
+            string input = @"nop +0
+acc +1
+jmp +4
+acc +3
+jmp -3
+acc -99
+acc +1
+jmp -4
+acc +6";
             var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            var indexes = new List<int>();
+            for (int i = 0; i < parsed.Count; i++)
+            {
+                if (parsed[i].StartsWith("jmp") || parsed[i].StartsWith("nop"))
+                {
+                    indexes.Add(i);
+                }
+            }
+            var game = new GameConsole(parsed);
+            var result = int.MinValue;
+            foreach (var index in indexes)
+            {
+                game.Flip(index);
+                try
+                {
+                    result = game.Exec2();
+                    Console.WriteLine($"index: {index} result={result}");
+                }
+                catch (TimeoutException)
+                {
+                    Console.WriteLine($"index={index} timeout");
+                }
+                game.Flip(index);
+            }
+
+            Assert.AreEqual(8, result);
         }
 
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
 
         [Test]
         public void Part2()
         {
             var parsed = Parse(Common.DayInput(nameof(Day08)));
-            Assert.AreEqual(0, 1);
+            var indexes = new List<int>();
+            for (int i = 0; i < parsed.Count; i++)
+            {
+                if (parsed[i].StartsWith("jmp") || parsed[i].StartsWith("nop"))
+                {
+                    indexes.Add(i);
+                }
+            }
+            var game = new GameConsole(parsed);
+            var result = int.MinValue;
+            int count = 0;
+            foreach (var index in indexes)
+            {
+                game.Flip(index);
+                try
+                {
+                    result = game.Exec2();
+                    Console.WriteLine($"index: {index} result={result}");
+                    count++;
+                }
+                catch (TimeoutException)
+                {
+                    Console.WriteLine($"index={index} timeout");
+                }
+                game.Flip(index);
+            }
+            Assert.IsTrue(count == 1);
+            Assert.AreEqual(920, result);
         }
 
     }
