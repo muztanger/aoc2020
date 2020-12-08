@@ -132,7 +132,7 @@ dotted black bags contain no other bags.";
 
             foreach (var bag in bags.Where(x => !x.Color.Equals("shiny gold")))
             {
-                bag.Contains("shiny gold", bags.Where(x => !x.Color.Equals("shiny gold")).ToHashSet());
+                //bag.Contains("shiny gold", bags.Where(x => !x.Color.Equals("shiny gold")).ToHashSet());
                 Console.WriteLine(bag);
             }
             Assert.AreEqual(0, 1);
