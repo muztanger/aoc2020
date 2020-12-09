@@ -209,9 +209,12 @@ namespace AdventOfCode2020
                         sum += parsed[j];
                         if (sum == y)
                         {
-                            Console.WriteLine($"i+1={i+1} j-1={j-1} n={n}");
-                            min = parsed[i + 1];
-                            max = parsed[j - 1];
+                            for (int k = i+1; k <= j; k++)
+                            {
+                                min = Math.Min(min, parsed[k]);
+                                max = Math.Max(max, parsed[k]);
+                            }
+                            Console.WriteLine($"i+1={i+1} j-1={j-1} n={n} min={min} max={max} result={min+max}");
                             found = true;
                             break;
                         }
@@ -222,6 +225,7 @@ namespace AdventOfCode2020
             long result = min + max;
             Assert.AreNotEqual(75253258, result);
             Assert.AreNotEqual(66770727, result);
+            Assert.AreNotEqual(67044077, result);
             Assert.AreEqual(0, result);
         }
 
