@@ -41,36 +41,21 @@ namespace AdventOfCode2020
             long result = long.MinValue;
             for (int index = preamble; index < parsed.Count; index++)
             {
-                Console.Write("{parsed[index]}: ");
                 var sums = new List<long>();
                 for (int i = index - preamble; i < index - 1; i++)
                 {
                     for (int j = i + 1; j < index; j++)
                     {
-                        //Console.WriteLine($"{i} {j}");
                         sums.Add(parsed[i] + parsed[j]);
                     }
                 }
-                if (sums.Contains(parsed[index]))
+                if (!sums.Contains(parsed[index]))
                 {
-                    Console.WriteLine("Valid");
-                }
-                else
-                {
-                    Console.WriteLine("Invalid");
                     result = parsed[index];
                     break;
                 }
             }
             Assert.AreEqual(127, result);
-        }
-
-        [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
         }
 
         [Test]
@@ -81,23 +66,16 @@ namespace AdventOfCode2020
             long result = long.MinValue;
             for (int index = preamble; index < parsed.Count; index++)
             {
-                Console.Write("{parsed[index]}: ");
                 var sums = new List<long>();
                 for (int i = index - preamble; i < index - 1; i++)
                 {
                     for (int j = i + 1; j < index; j++)
                     {
-                        //Console.WriteLine($"{i} {j}");
                         sums.Add(parsed[i] + parsed[j]);
                     }
                 }
-                if (sums.Contains(parsed[index]))
+                if (!sums.Contains(parsed[index]))
                 {
-                    Console.WriteLine("Valid");
-                }
-                else
-                {
-                    Console.WriteLine("Invalid");
                     result = parsed[index];
                     break;
                 }
@@ -143,7 +121,7 @@ namespace AdventOfCode2020
 
                 if (sum == y)
                 {
-                    Console.WriteLine("i=0 n={n}");
+                    //TODO!
                     found = true;
                     break;
                 }
@@ -156,7 +134,6 @@ namespace AdventOfCode2020
                         sum += parsed[j];
                         if (sum == y)
                         {
-                            Console.WriteLine($"i={i} j={j} n={n}");
                             min = parsed[i + 1];
                             max = parsed[j - 1];
                             found = true;
@@ -165,17 +142,8 @@ namespace AdventOfCode2020
                     }
                 }
             }
-            Console.WriteLine($"min={min} max={max}");
-            long result = min + max;
-            Assert.AreEqual(62, result);
-        }
 
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            Assert.AreEqual(62, min + max);
         }
 
         [Test]
@@ -196,11 +164,16 @@ namespace AdventOfCode2020
 
                 if (sum == y)
                 {
-                    Console.WriteLine("i=0 n={n}");
+                    for (int k = 0; k < n; k++)
+                    {
+                        min = Math.Min(min, parsed[k]);
+                        max = Math.Max(max, parsed[k]);
+                    }
                     found = true;
                     break;
                 }
 
+                if (!found)
                 {
                     int i = 0;
                     for (int j = n; j < parsed.Count; j++, i++)
@@ -214,19 +187,13 @@ namespace AdventOfCode2020
                                 min = Math.Min(min, parsed[k]);
                                 max = Math.Max(max, parsed[k]);
                             }
-                            Console.WriteLine($"i+1={i+1} j-1={j-1} n={n} min={min} max={max} result={min+max}");
                             found = true;
                             break;
                         }
                     }
                 }
             }
-            Console.WriteLine($"min={min} max={max}");
-            long result = min + max;
-            Assert.AreNotEqual(75253258, result);
-            Assert.AreNotEqual(66770727, result);
-            Assert.AreNotEqual(67044077, result);
-            Assert.AreEqual(0, result);
+            Assert.AreEqual(70672245, min + max);
         }
 
     }
