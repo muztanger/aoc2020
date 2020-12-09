@@ -56,38 +56,15 @@ namespace AdventOfCode2020
                 mAccumulator = 0;
             }
 
-            /**
-             *     acc increases or decreases a single global value called the accumulator 
-             *     by the value given in the argument. For example, acc +7 would 
-             *     increase the accumulator by 7. The accumulator starts at 0. After an acc 
-             *     instruction, the instruction immediately below it is executed next.
-             */
             public void Acc(int x)
             {
                 mAccumulator += x;
                 Jmp(1);
             }
 
-            /**
-             *  jmp jumps to a new instruction relative to itself. The next instruction to execute is 
-             *  found using the argument as an offset from the jmp instruction; for example, 
-             *  jmp +2 would skip the next instruction, jmp +1 would continue to the instruction 
-             *  immediately below it, and jmp -20 would cause the instruction 20 lines above 
-             *  to be executed next.
-             */
-            public void Jmp(int x)
-            {
-                mIndex += x;
-            }
+            public void Jmp(int x) => mIndex += x;
 
-            /**
-             *  nop stands for No OPeration - it does nothing. The instruction immediately 
-             *  below it is executed next.
-             */
-            public void Nop(int x)
-            {
-                Jmp(1);
-            }
+            public void Nop() => Jmp(1);
 
             public int Exec()
             {
@@ -98,7 +75,7 @@ namespace AdventOfCode2020
                     var instruction = mProgram[mIndex];
                     switch (instruction.Op)
                     {
-                        case Operation.Nop: Nop(instruction.Value); break;
+                        case Operation.Nop: Nop(); break;
                         case Operation.Acc: Acc(instruction.Value); break;
                         case Operation.Jmp: Jmp(instruction.Value); break;
                         default: throw new NotImplementedException();
@@ -126,12 +103,12 @@ namespace AdventOfCode2020
                 {
                     mem.TryGetValue(mIndex, out var count);
                     mem[mIndex] = ++count;
-                    if (count >= 100) throw new TimeoutException();
+                    if (count >= 10) throw new TimeoutException();
 
                     var instruction = mProgram[mIndex];
                     switch (instruction.Op)
                     {
-                        case Operation.Nop: Nop(instruction.Value); break;
+                        case Operation.Nop: Nop(); break;
                         case Operation.Acc: Acc(instruction.Value); break;
                         case Operation.Jmp: Jmp(instruction.Value); break;
                         default: throw new NotImplementedException();
@@ -202,11 +179,10 @@ acc +6";
                 try
                 {
                     result = game.Exec2();
-                    Console.WriteLine($"index: {index} result={result}");
+                    break;
                 }
                 catch (TimeoutException)
                 {
-                    Console.WriteLine($"index: {index} timeout");
                 }
                 game.Flip(index);
             }
@@ -229,23 +205,20 @@ acc +6";
             }
             var game = new GameConsole(parsed);
             var result = int.MinValue;
-            int count = 0;
             foreach (var index in indexes)
             {
                 game.Flip(index);
                 try
                 {
                     result = game.Exec2();
-                    Console.WriteLine($"index: {index} result={result}");
-                    count++;
+                    break;
                 }
                 catch (TimeoutException)
                 {
-                    Console.WriteLine($"index={index} timeout");
+                    // continue
                 }
                 game.Flip(index);
             }
-            Assert.IsTrue(count == 1);
             Assert.AreEqual(920, result);
         }
 
