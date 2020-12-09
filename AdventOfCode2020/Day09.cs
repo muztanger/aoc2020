@@ -102,15 +102,72 @@ namespace AdventOfCode2020
                     break;
                 }
             }
-            Assert.AreEqual(127, result);
+            Assert.AreEqual(552655238, result);
         }
 
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
+            const long y = 127;
+            string input = @"35
+20
+15
+25
+47
+40
+62
+55
+65
+95
+102
+117
+150
+182
+127
+219
+299
+277
+309
+576";
             var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            long min = long.MaxValue;
+            long max = long.MinValue;
+            bool found = false;
+            for (int n = 2; n < parsed.Count - 1 && !found; n++)
+            {
+                long sum = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    sum += parsed[i];
+                }
+
+                if (sum == y)
+                {
+                    Console.WriteLine("i=0 n={n}");
+                    found = true;
+                    break;
+                }
+
+                {
+                    int i = 0;
+                    for (int j = n; j < parsed.Count; j++, i++)
+                    {
+                        sum -= parsed[i];
+                        sum += parsed[j];
+                        if (sum == y)
+                        {
+                            Console.WriteLine($"i={i} j={j} n={n}");
+                            min = parsed[i + 1];
+                            max = parsed[j - 1];
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            Console.WriteLine($"min={min} max={max}");
+            long result = min + max;
+            Assert.AreEqual(62, result);
         }
 
         [Test]
@@ -124,8 +181,48 @@ namespace AdventOfCode2020
         [Test]
         public void Part2()
         {
+            const long y = 552655238;
             var parsed = Parse(Common.DayInput(nameof(Day09)));
-            Assert.AreEqual(0, 1);
+            long min = long.MaxValue;
+            long max = long.MinValue;
+            bool found = false;
+            for (int n = 2; n < parsed.Count - 1 && !found; n++)
+            {
+                long sum = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    sum += parsed[i];
+                }
+
+                if (sum == y)
+                {
+                    Console.WriteLine("i=0 n={n}");
+                    found = true;
+                    break;
+                }
+
+                {
+                    int i = 0;
+                    for (int j = n; j < parsed.Count; j++, i++)
+                    {
+                        sum -= parsed[i];
+                        sum += parsed[j];
+                        if (sum == y)
+                        {
+                            Console.WriteLine($"i+1={i+1} j-1={j-1} n={n}");
+                            min = parsed[i + 1];
+                            max = parsed[j - 1];
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            Console.WriteLine($"min={min} max={max}");
+            long result = min + max;
+            Assert.AreNotEqual(75253258, result);
+            Assert.AreNotEqual(66770727, result);
+            Assert.AreEqual(0, result);
         }
 
     }
