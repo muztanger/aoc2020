@@ -13,10 +13,7 @@ namespace AdventOfCode2020
             return input.Select(x => int.Parse(x)).ToList();
         }
 
-        [Test]
-        public void Part1_Example1()
-        {
-            string input = @"16
+            string example1 = @"16
 10
 15
 5
@@ -27,7 +24,10 @@ namespace AdventOfCode2020
 6
 12
 4";
-            var jolts = Parse(Common.GetLines(input)).OrderBy(x => x);
+        [Test]
+        public void Part1_Example1()
+        {
+            var jolts = Parse(Common.GetLines(example1)).OrderBy(x => x);
             var counts = new Dictionary<int, int>();
             var last = 0;
             foreach (var x in jolts)
@@ -49,10 +49,7 @@ namespace AdventOfCode2020
             Assert.AreEqual(0, 3);
         }
 
-        [Test]
-        public void Part1_Example2()
-        {
-            string input = @"28
+            string example2 = @"28
 33
 18
 42
@@ -83,7 +80,10 @@ namespace AdventOfCode2020
 34
 10
 3";
-            var jolts = Parse(Common.GetLines(input)).OrderBy(x => x);
+        [Test]
+        public void Part1_Example2()
+        {
+            var jolts = Parse(Common.GetLines(example2)).OrderBy(x => x);
             var counts = new Dictionary<int, int>();
             var last = 0;
             foreach (var x in jolts)
@@ -129,27 +129,63 @@ namespace AdventOfCode2020
             Assert.AreEqual(0, counts[1] * counts[3]);
         }
 
+        Dictionary<long, long> mem = new Dictionary<long, long>();
+        public long ChoiceCount(int x, IEnumerable<int> choices)
+        {
+            if (mem.ContainsKey(x)) return mem[x];
+            if (choices.Count() <= 1) return 1;
+            long sum = 0;
+            foreach (var choice in choices.Where(y => y > x && y <= x + 3).OrderByDescending(z => z))
+            {
+                sum += ChoiceCount(choice, choices.Where(x => x > choice));
+            }
+            mem[x] = sum;
+            return sum;
+        }
+
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            mem = new Dictionary<long, long>();
+            var jolts = Parse(Common.GetLines(example1)).OrderBy(x => x);
+            var choiceCount = new Dictionary<int, int>();
+            long sum = 0;
+            foreach (var choice in jolts.Where(y => y >= 1 && y <= 3))
+            {
+                sum += ChoiceCount(choice, jolts.Where(x => x > choice));
+            }
+
+            Assert.AreEqual(8, sum);
         }
 
         [Test]
         public void Part2_Example2()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            mem = new Dictionary<long, long>();
+            var jolts = Parse(Common.GetLines(example2)).OrderBy(x => x);
+            var choiceCount = new Dictionary<int, int>();
+            long sum = 0;
+            foreach (var choice in jolts.Where(y => y >= 1 && y <= 3))
+            {
+                sum += ChoiceCount(choice, jolts.Where(x => x > choice));
+            }
+
+            Assert.AreEqual(19208, sum);
         }
 
         [Test]
         public void Part2()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day10)));
-            Assert.AreEqual(0, 1);
+            mem = new Dictionary<long, long>();
+            var jolts = Parse(Common.DayInput(nameof(Day10))).OrderBy(x => x);
+            var choiceCount = new Dictionary<int, int>();
+            long sum = 0;
+            foreach (var choice in jolts.Where(y => y >= 1 && y <= 3))
+            {
+                sum += ChoiceCount(choice, jolts.Where(x => x > choice));
+            }
+            Assert.AreNotEqual(67108864, sum);
+            Assert.AreEqual(386869246296064L, sum);
         }
 
     }
