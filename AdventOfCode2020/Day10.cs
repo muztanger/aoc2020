@@ -42,11 +42,8 @@ namespace AdventOfCode2020
             z++;
             counts[3] = z;
 
-            foreach (var kv in counts)
-            {
-                Console.WriteLine($"{kv.Key}: {kv.Value}");
-            }
-            Assert.AreEqual(0, 3);
+            Assert.AreEqual(7, counts[1]);
+            Assert.AreEqual(5, counts[3]);
         }
 
             string example2 = @"28
@@ -98,10 +95,8 @@ namespace AdventOfCode2020
             z++;
             counts[3] = z;
 
-            foreach (var kv in counts)
-            {
-                Console.WriteLine($"{kv.Key}: {kv.Value}");
-            }
+            Assert.AreEqual(22, counts[1]);
+            Assert.AreEqual(10, counts[3]);
         }
 
         [Test]
@@ -126,18 +121,18 @@ namespace AdventOfCode2020
             {
                 Console.WriteLine($"{kv.Key}: {kv.Value}");
             }
-            Assert.AreEqual(0, counts[1] * counts[3]);
+            Assert.AreEqual(2812, counts[1] * counts[3]);
         }
 
-        Dictionary<long, long> mem = new Dictionary<long, long>();
-        public long ChoiceCount(int x, IEnumerable<int> choices)
+        public long ChoiceCount(int x, IEnumerable<int> choices, Dictionary<long, long> mem = null)
         {
-            if (mem.ContainsKey(x)) return mem[x];
+            if (mem == null) mem = new Dictionary<long, long>();
+            else if (mem.ContainsKey(x)) return mem[x];
             if (choices.Count() <= 1) return 1;
             long sum = 0;
             foreach (var choice in choices.Where(y => y > x && y <= x + 3).OrderByDescending(z => z))
             {
-                sum += ChoiceCount(choice, choices.Where(x => x > choice));
+                sum += ChoiceCount(choice, choices.Where(x => x > choice), mem);
             }
             mem[x] = sum;
             return sum;
@@ -146,7 +141,6 @@ namespace AdventOfCode2020
         [Test]
         public void Part2_Example1()
         {
-            mem = new Dictionary<long, long>();
             var jolts = Parse(Common.GetLines(example1)).OrderBy(x => x);
             var choiceCount = new Dictionary<int, int>();
             long sum = 0;
@@ -161,7 +155,6 @@ namespace AdventOfCode2020
         [Test]
         public void Part2_Example2()
         {
-            mem = new Dictionary<long, long>();
             var jolts = Parse(Common.GetLines(example2)).OrderBy(x => x);
             var choiceCount = new Dictionary<int, int>();
             long sum = 0;
@@ -176,7 +169,6 @@ namespace AdventOfCode2020
         [Test]
         public void Part2()
         {
-            mem = new Dictionary<long, long>();
             var jolts = Parse(Common.DayInput(nameof(Day10))).OrderBy(x => x);
             var choiceCount = new Dictionary<int, int>();
             long sum = 0;
