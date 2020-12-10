@@ -15,19 +15,15 @@ namespace AdventOfCode2020
 
         private static int DiffCount(IOrderedEnumerable<int> jolts)
         {
-            var counts = new Dictionary<int, int>();
+            var counts = new DefaultDictionary<int, int>();
             var last = 0;
             foreach (var x in jolts)
             {
                 int diff = x - last;
-                counts.TryGetValue(diff, out var y);
-                y++;
-                counts[diff] = y;
+                counts[diff]++;
                 last = x;
             }
-            counts.TryGetValue(3, out var z);
-            z++;
-            counts[3] = z;
+            counts[3]++;
             var result = counts[1] * counts[3];
             return result;
         }

@@ -98,12 +98,11 @@ namespace AdventOfCode2020
             {
                 Reset();
 
-                var mem = new Dictionary<int, int>();
+                var mem = new DefaultDictionary<int, int>();
                 while (mIndex != mProgram.Count)
                 {
-                    mem.TryGetValue(mIndex, out var count);
-                    mem[mIndex] = ++count;
-                    if (count >= 10) throw new TimeoutException();
+                    mem[mIndex]++;
+                    if (mem[mIndex] >= 10) throw new TimeoutException();
 
                     var instruction = mProgram[mIndex];
                     switch (instruction.Op)
