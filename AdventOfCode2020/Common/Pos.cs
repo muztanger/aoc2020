@@ -76,6 +76,11 @@ namespace AdventOfCode2020
             return x.GetHashCode() * 7919 + y.GetHashCode();
         }
 
+        public bool BetweenXY(int z)
+        {
+            return z >= x && z <= y;
+        }
+
         internal bool Between(Pos p1, Pos p2)
         {
             if (p1.x == p2.x && p2.x == this.x)

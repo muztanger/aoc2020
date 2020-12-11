@@ -111,7 +111,7 @@ namespace AdventOfCode2020
                     foreach (var d in mDirections)
                     {
                         var p = key;
-                        while (p.x >= mColRange.x && p.y >= mRowRange.x && p.x <= mColRange.y && p.y <= mRowRange.y)
+                        while (mColRange.BetweenXY(p.x) && mRowRange.BetweenXY(p.y))
                         {
                             p += d;
                             if (mSeats.ContainsKey(p))
@@ -174,7 +174,7 @@ L.LLLLL.LL";
         public void Part1()
         {
             var plane = Plane.Parse(Common.DayInput(nameof(Day11)));
-            while (plane.Iterate()) ;
+            while (plane.Iterate());
             Assert.AreEqual(2438, plane.Count());
         }
 
@@ -195,7 +195,6 @@ L.LLLLL.LL";
         public void Part2()
         {
             var plane = Plane.Parse(Common.DayInput(nameof(Day11)));
-            plane.Print();
             while (plane.Iterate2());
             Assert.AreEqual(2174, plane.Count());
         }
