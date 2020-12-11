@@ -32,10 +32,7 @@ namespace AdventOfCode2020
             return result;
         }
 
-        [Test]
-        public void Part1_Example1()
-        {
-            string input = @"L.LL.LL.LL
+        string example1 = @"L.LL.LL.LL
 LLLLLLL.LL
 L.L.L..L..
 LLLL.LL.LL
@@ -46,7 +43,11 @@ LLLLLLLLLL
 L.LLLLLL.L
 L.LLLLL.LL";
 
-            var seats = Parse(Common.GetLines(input));
+        [Test]
+        public void Part1_Example1()
+        {
+
+            var seats = Parse(Common.GetLines(example1));
             Print(seats);
             var last = seats;
             var equal = false;
@@ -165,9 +166,74 @@ L.LLLLL.LL";
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            var seats = Parse(Common.GetLines(example1));
+            Print(seats);
+            var last = seats;
+            while (true)
+            {
+                seats = Iterate2(seats);
+                Print(seats);
+
+                if (AreEqual(seats, last)) break;
+                last = seats;
+            }
+            Print(seats);
+
+            Assert.AreEqual(26, seats.Values.Where(x => x == true).Count());
+        }
+
+        private static bool AreEqual(Dictionary<Pos, bool> seats, Dictionary<Pos, bool> last)
+        {
+            foreach (var key in seats.Keys)
+            {
+                if (last[key] != seats[key])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static Dictionary<Pos, bool> Iterate2(Dictionary<Pos, bool> seats)
+        {
+            int X = seats.Select(kv => kv.Key.x).Max();
+            int Y = seats.Select(kv => kv.Key.y).Max();
+
+            var result = new Dictionary<Pos, bool>();
+            var directions = new[] { (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1) }.Select(t => new Pos(t.Item1, t.Item2));
+            foreach (var key in seats.Keys)
+            {
+                int count = 0;
+                foreach (var d in directions)
+                {
+                    var p = key;
+                    while (p.x >= 0 && p.y >= 0 && p.x <= X && p.y <= Y)
+                    {
+                        p += d;
+                        if (seats.ContainsKey(p))
+                        {
+                            if (seats[p]) count++;
+                            break;
+                        }
+
+                    }
+
+                }
+                if (!seats[key] && count == 0)
+                {
+                    result[key] = true;
+                }
+                else if (seats[key] && count >= 5)
+                {
+                    result[key] = false;
+                }
+                else
+                {
+                    result[key] = seats[key];
+                }
+            }
+
+            return result;
         }
 
         [Test]
@@ -181,8 +247,21 @@ L.LLLLL.LL";
         [Test]
         public void Part2()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day11)));
-            Assert.AreEqual(0, 1);
+            var seats = Parse(Common.DayInput(nameof(Day11)));
+            Print(seats);
+            var last = seats;
+            while (true)
+            {
+                seats = Iterate2(seats);
+                Print(seats);
+
+                if (AreEqual(seats, last)) break;
+                last = seats;
+            }
+            Print(seats);
+
+            Assert.AreEqual(26, seats.Values.Where(x => x == true).Count());
+
         }
 
     }
