@@ -137,8 +137,29 @@ L.LLLLL.LL";
         [Test]
         public void Part1()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day11)));
-            Assert.AreEqual(0, 1);
+            var seats = Parse(Common.DayInput(nameof(Day11)));
+            Print(seats);
+            var last = seats;
+            var equal = false;
+            while (!equal)
+            {
+                seats = Iterate(seats);
+                //Print(seats);
+                equal = true;
+                foreach (var key in seats.Keys)
+                {
+                    if (last[key] != seats[key])
+                    {
+                        equal = false;
+                        break;
+                    }
+                }
+                if (equal) break;
+                last = seats;
+            }
+            Print(seats);
+
+            Assert.AreEqual(2438, seats.Values.Where(x => x == true).Count());
         }
 
         [Test]
