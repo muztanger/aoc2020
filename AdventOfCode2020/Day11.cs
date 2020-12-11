@@ -8,29 +8,144 @@ namespace AdventOfCode2020
 {
     public class Day11
     {
-        private static Dictionary<Pos, bool> Parse(IEnumerable<string> input)
+        public class Plane
         {
-            var result = new Dictionary<Pos, bool>();
-            int row = 0;
-            foreach (var line in input)
+            private Dictionary<Pos, bool> mSeats;
+            private readonly Pos mColRange;
+            private readonly Pos mRowRange;
+            private readonly IEnumerable<Pos> mDirections = new[] { (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1) }.Select(t => new Pos(t.Item1, t.Item2));
+
+            public Plane(Dictionary<Pos, bool> seats, Pos colRange, Pos rowRange)
             {
-                var nums = new List<int>();
-                int col = 0;
-                foreach (char c in line)
-                {
-                    // . floor
-                    // L empty seet
-                    // # occupied seat
-                    if (c == 'L')
-                    {
-                        result[new Pos(col, row)] = false;
-                    }
-                    col++;
-                }
-                row++;
+                mSeats = seats;
+                mColRange = colRange;
+                mRowRange = rowRange;
             }
-            return result;
+
+            public static Plane Parse(IEnumerable<string> input)
+            {
+                var seats = new Dictionary<Pos, bool>();
+                int row = 0;
+                int col = 0;
+                foreach (var line in input)
+                {
+                    col = 0;
+                    foreach (char c in line)
+                    {
+                        // . floor
+                        // L empty seet
+                        // # occupied seat
+                        if (c == 'L')
+                        {
+                            seats[new Pos(col, row)] = false;
+                        }
+                        col++;
+                    }
+                    row++;
+                }
+                return new Plane(seats, new Pos(0, col), new Pos(0, row));
+            }
+
+            public void Print()
+            {
+                for (int y = mRowRange.x; y <= mRowRange.y; y++)
+                {
+                    var line = new StringBuilder();
+                    for (int x = mColRange.x; x <= mColRange.y; x++)
+                    {
+                        var p = new Pos(x, y);
+                        if (mSeats.ContainsKey(p))
+                        {
+                            if (mSeats[p])
+                            {
+                                line.Append('#');
+                            }
+                            else
+                            {
+                                line.Append('L');
+                            }
+                        }
+                        else
+                        {
+                            line.Append('.');
+                        }
+                    }
+                    Console.WriteLine(line.ToString());
+                }
+                Console.WriteLine();
+            }
+
+            public bool Iterate()
+            {
+                var result = new Dictionary<Pos, bool>();
+                bool isChanged = false;
+                foreach (var key in mSeats.Keys)
+                {
+                    int count = mDirections.Where(d => mSeats.ContainsKey(key + d) && mSeats[key + d]).Count();
+                    if (!mSeats[key] && count == 0)
+                    {
+                        result[key] = true;
+                        isChanged = true;
+                    }
+                    else if (mSeats[key] && count >= 4)
+                    {
+                        result[key] = false;
+                        isChanged = true;
+                    }
+                    else
+                    {
+                        result[key] = mSeats[key];
+                    }
+                }
+                mSeats = result;
+                return isChanged;
+            }
+
+            public bool Iterate2()
+            {
+                var result = new Dictionary<Pos, bool>();
+                bool isChanged = false;
+                foreach (var key in mSeats.Keys)
+                {
+                    int count = 0;
+                    foreach (var d in mDirections)
+                    {
+                        var p = key;
+                        while (p.x >= mColRange.x && p.y >= mRowRange.x && p.x <= mColRange.y && p.y <= mRowRange.y)
+                        {
+                            p += d;
+                            if (mSeats.ContainsKey(p))
+                            {
+                                if (mSeats[p]) count++;
+                                break;
+                            }
+
+                        }
+                    }
+
+                    if (!mSeats[key] && count == 0)
+                    {
+                        result[key] = true;
+                        isChanged = true;
+                    }
+                    else if (mSeats[key] && count >= 5)
+                    {
+                        result[key] = false;
+                        isChanged = true;
+                    }
+                    else
+                    {
+                        result[key] = mSeats[key];
+                    }
+                }
+
+                mSeats = result;
+                return isChanged;
+            }
+
+            public int Count() => mSeats.Values.Where(x => x == true).Count();
         }
+
 
         string example1 = @"L.LL.LL.LL
 LLLLLLL.LL
@@ -46,222 +161,43 @@ L.LLLLL.LL";
         [Test]
         public void Part1_Example1()
         {
-
-            var seats = Parse(Common.GetLines(example1));
-            Print(seats);
-            var last = seats;
-            var equal = false;
-            while (!equal)
+            var plane = Plane.Parse(Common.GetLines(example1));
+            plane.Print();
+            while (plane.Iterate())
             {
-                seats = Iterate(seats);
-                //Print(seats);
-                equal = true;
-                foreach (var key in seats.Keys)
-                {
-                    if (last[key] != seats[key])
-                    {
-                        equal = false;
-                        break;
-                    }
-                }
-                if (equal) break;
-                last = seats;
+                plane.Print();
             }
-            Print(seats);
-
-            Assert.AreEqual(37, seats.Values.Where(x => x == true).Count());
-        }
-
-        private static void Print(Dictionary<Pos, bool> seats)
-        {
-            int X = seats.Select(kv => kv.Key.x).Max();
-            int Y = seats.Select(kv => kv.Key.y).Max();
-            for (int y = 0; y <= Y; y++)
-            {
-                var line = new StringBuilder();
-                for (int x = 0; x <= X; x++)
-                {
-                    var p = new Pos(x, y);
-                    if (seats.ContainsKey(p))
-                    {
-                        if (seats[p])
-                        {
-                            line.Append('#');
-                        }
-                        else
-                        {
-                            line.Append('L');
-                        }
-                    }
-                    else
-                    {
-                        line.Append('.');
-                    }
-                }
-                Console.WriteLine(line.ToString());
-            }
-            Console.WriteLine();
-        }
-
-        private static Dictionary<Pos, bool> Iterate(Dictionary<Pos, bool> seats)
-        {
-            var result = new Dictionary<Pos, bool>();
-            var directions = new[] { (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1) }.Select(t => new Pos(t.Item1, t.Item2));
-            foreach (var key in seats.Keys)
-            {
-                int count = directions.Where(d => seats.ContainsKey(key + d) && seats[key + d]).Count();
-                if (!seats[key] && count == 0)
-                {
-                    result[key] = true;
-                }
-                else if (seats[key] && count >= 4)
-                {
-                    result[key] = false;
-                }
-                else
-                {
-                    result[key] = seats[key];
-                }
-            }
-
-            return result;
-        }
-
-        [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            Assert.AreEqual(37, plane.Count());
         }
 
         [Test]
         public void Part1()
         {
-            var seats = Parse(Common.DayInput(nameof(Day11)));
-            Print(seats);
-            var last = seats;
-            var equal = false;
-            while (!equal)
-            {
-                seats = Iterate(seats);
-                //Print(seats);
-                equal = true;
-                foreach (var key in seats.Keys)
-                {
-                    if (last[key] != seats[key])
-                    {
-                        equal = false;
-                        break;
-                    }
-                }
-                if (equal) break;
-                last = seats;
-            }
-            Print(seats);
-
-            Assert.AreEqual(2438, seats.Values.Where(x => x == true).Count());
+            var plane = Plane.Parse(Common.DayInput(nameof(Day11)));
+            while (plane.Iterate()) ;
+            Assert.AreEqual(2438, plane.Count());
         }
 
         [Test]
         public void Part2_Example1()
         {
-            var seats = Parse(Common.GetLines(example1));
-            Print(seats);
-            var last = seats;
-            while (true)
+            var plane = Plane.Parse(Common.GetLines(example1));
+            plane.Print();
+            while (plane.Iterate2())
             {
-                seats = Iterate2(seats);
-                Print(seats);
-
-                if (AreEqual(seats, last)) break;
-                last = seats;
+                plane.Print();
             }
-            Print(seats);
-
-            Assert.AreEqual(26, seats.Values.Where(x => x == true).Count());
+            Assert.AreEqual(26, plane.Count());
         }
 
-        private static bool AreEqual(Dictionary<Pos, bool> seats, Dictionary<Pos, bool> last)
-        {
-            foreach (var key in seats.Keys)
-            {
-                if (last[key] != seats[key])
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private static Dictionary<Pos, bool> Iterate2(Dictionary<Pos, bool> seats)
-        {
-            int X = seats.Select(kv => kv.Key.x).Max();
-            int Y = seats.Select(kv => kv.Key.y).Max();
-
-            var result = new Dictionary<Pos, bool>();
-            var directions = new[] { (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1) }.Select(t => new Pos(t.Item1, t.Item2));
-            foreach (var key in seats.Keys)
-            {
-                int count = 0;
-                foreach (var d in directions)
-                {
-                    var p = key;
-                    while (p.x >= 0 && p.y >= 0 && p.x <= X && p.y <= Y)
-                    {
-                        p += d;
-                        if (seats.ContainsKey(p))
-                        {
-                            if (seats[p]) count++;
-                            break;
-                        }
-
-                    }
-
-                }
-                if (!seats[key] && count == 0)
-                {
-                    result[key] = true;
-                }
-                else if (seats[key] && count >= 5)
-                {
-                    result[key] = false;
-                }
-                else
-                {
-                    result[key] = seats[key];
-                }
-            }
-
-            return result;
-        }
-
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
 
         [Test]
         public void Part2()
         {
-            var seats = Parse(Common.DayInput(nameof(Day11)));
-            Print(seats);
-            var last = seats;
-            while (true)
-            {
-                seats = Iterate2(seats);
-                Print(seats);
-
-                if (AreEqual(seats, last)) break;
-                last = seats;
-            }
-            Print(seats);
-
-            Assert.AreEqual(26, seats.Values.Where(x => x == true).Count());
-
+            var plane = Plane.Parse(Common.DayInput(nameof(Day11)));
+            plane.Print();
+            while (plane.Iterate2());
+            Assert.AreEqual(2174, plane.Count());
         }
 
     }
