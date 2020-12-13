@@ -37,6 +37,11 @@ namespace AdventOfCode2020
             return new Pos(p1.x * n, p1.y * n);
         }
 
+        public static Pos operator *(int n, Pos p1)
+        {
+            return p1 * n;
+        }
+
         public static Pos operator +(Pos p1, Pos p2)
         {
             return new Pos(p1.x + p2.x, p1.y + p2.y);
@@ -49,7 +54,7 @@ namespace AdventOfCode2020
             return $"({x}, {y})";
         }
 
-        internal int manhattan(Pos inter)
+        internal int Manhattan(Pos inter)
         {
             return Math.Abs(x - inter.x) + Math.Abs(y - inter.y);
         }
