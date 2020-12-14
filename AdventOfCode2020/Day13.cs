@@ -9,6 +9,17 @@ namespace AdventOfCode2020
 {
     public class Day13
     {
+        public sealed class ReverseComparer<T> : IComparer<T>
+        {
+            private readonly IComparer<T> inner;
+            public ReverseComparer() : this(null) { }
+            public ReverseComparer(IComparer<T> inner)
+            {
+                this.inner = inner ?? Comparer<T>.Default;
+            }
+            int IComparer<T>.Compare(T x, T y) { return inner.Compare(y, x); }
+        }
+
         class Schedule
         {
             public static int Earliest(IEnumerable<string> input)
@@ -29,15 +40,49 @@ namespace AdventOfCode2020
                     timestamp++;
                 }
             }
+
+            public static long Contest(IEnumerable<string> input)
+            {
+                var lines = input.ToList();
+                var busses = new SortedList<long, long>(new ReverseComparer<long>());
+                int index = 0;
+                foreach (var bus in lines[1].Split(","))
+                {
+                    if (Regex.IsMatch(bus, @"\d+"))
+                    {
+                        busses.Add(long.Parse(bus), index);
+                    }
+                    index++;
+                }
+                var max = busses.First();
+                long timestamp = max.Key - max.Value;
+
+                for (;;)
+                {
+                    var isFound = true;
+                    foreach (var bust in busses.Skip(1))
+                    {
+                        if ((timestamp + bust.Value) % bust.Key != 0)
+                        {
+                            isFound = false;
+                            break;
+                        }
+                    }
+                    if (isFound) break;
+                    timestamp += max.Key;
+                }
+                return timestamp;
+            }
         }
 
+
+        string example1 = @"939
+7,13,x,x,59,x,31,19";
 
         [Test]
         public void Part1_Example1()
         {
-            string input = @"939
-7,13,x,x,59,x,31,19";
-            var result = Schedule.Earliest(Common.GetLines(input));
+            var result = Schedule.Earliest(Common.GetLines(example1));
             Assert.AreEqual(295, result);
         }
 
@@ -51,24 +96,27 @@ namespace AdventOfCode2020
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            //var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            var result = Schedule.Contest(Common.GetLines(example1));
+            Assert.AreEqual(1068781L, result);
         }
 
-        [Test]
-        public void Part2_Example2()
+        [TestCase("17,x,13,19", 3417L)]
+        [TestCase("67,7,59,61", 754018L)]
+        [TestCase("67,x,7,59,61", 779210L)]
+        [TestCase("67,7,x,59,61", 1261476L)]
+        [TestCase("1789,37,47,1889", 1202161486L)]
+        public void Part2_Example2(string input, long expected)
         {
-            string input = @"";
-            //var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            var result = Schedule.Contest(Common.GetLines("\n" + input));
+            Assert.AreEqual(expected, result);
         }
 
         [Test]
         public void Part2()
         {
             //var parsed = Parse(Common.DayInput(nameof(Day13)));
-            Assert.AreEqual(0, 1);
+            var result = Schedule.Contest(Common.DayInput(nameof(Day13)));
+            Assert.AreEqual(1068781L, result);
         }
 
     }
