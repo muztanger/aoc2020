@@ -44,7 +44,8 @@ namespace AdventOfCode2020
             public static long Contest(IEnumerable<string> input)
             {
                 var lines = input.ToList();
-                var busses = new SortedList<long, long>(new ReverseComparer<long>());
+                var busses = new SortedList<long, long>();
+                //var busses = new SortedList<long, long>(new ReverseComparer<long>());
                 int index = 0;
                 foreach (var bus in lines[1].Split(","))
                 {
@@ -54,22 +55,47 @@ namespace AdventOfCode2020
                     }
                     index++;
                 }
-                var max = busses.First();
-                long timestamp = max.Key - max.Value;
+                var first = busses.First();
+                long timestamp = first.Key - first.Value;
+                long step = first.Key;
+                busses.Remove(first.Key);
 
+                var last = new Dictionary<long, long>();
+                var stepChange = long.MinValue;
+                var stepChangeKey = first.Key;
                 for (;;)
                 {
                     var isFound = true;
-                    foreach (var bust in busses.Skip(1))
+                    foreach (var bust in busses)
                     {
                         if ((timestamp + bust.Value) % bust.Key != 0)
                         {
                             isFound = false;
                             break;
                         }
+                        else
+                        {
+                            if (last.ContainsKey(bust.Key))
+                            {
+                                Console.WriteLine($"{bust.Key} {timestamp - last[bust.Key]}");
+                                stepChange = timestamp - last[bust.Key];
+                                stepChangeKey = bust.Key;
+                            }
+                            else
+                            {
+                                last[bust.Key] = timestamp;
+                            }
+                        }
                     }
                     if (isFound) break;
-                    timestamp += max.Key;
+                    if (stepChange > 0)
+                    {
+                        last.Clear();
+                        step = stepChange;
+                        stepChange = long.MinValue;
+                        busses.Remove(stepChangeKey);
+                    }
+                    timestamp += step;
                 }
                 return timestamp;
             }
@@ -116,7 +142,7 @@ namespace AdventOfCode2020
         {
             //var parsed = Parse(Common.DayInput(nameof(Day13)));
             var result = Schedule.Contest(Common.DayInput(nameof(Day13)));
-            Assert.AreEqual(1068781L, result);
+            Assert.AreEqual(690123192779524L, result);
         }
 
     }
