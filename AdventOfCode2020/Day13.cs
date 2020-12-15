@@ -44,34 +44,49 @@ namespace AdventOfCode2020
             public static long Contest(IEnumerable<string> input)
             {
                 var lines = input.ToList();
-                var busses = new SortedList<long, long>(new ReverseComparer<long>());
-                int index = 0;
+                var busses = new List<(long, long)>();
+                int offset = 0;
                 foreach (var bus in lines[1].Split(","))
                 {
                     if (Regex.IsMatch(bus, @"\d+"))
                     {
-                        busses.Add(long.Parse(bus), index);
+                        busses.Add((long.Parse(bus), offset));
                     }
-                    index++;
+                    offset++;
                 }
-                var max = busses.First();
-                long timestamp = max.Key - max.Value;
+                var bussTimes = new List<long>();
+                foreach (var kv in busses)
+                {
+                    var x = kv.Item1 - kv.Item2;
+                    while (x < 0) x += kv.Item1;
+                    bussTimes.Add(x);
+                }
 
+                long step = 1024 * 100;
+                long last = 0L;
+                long limit = step;
                 for (;;)
                 {
-                    var isFound = true;
-                    foreach (var bust in busses.Skip(1))
+                    // jump longer and longer when realizing perodicity!
+                    Console.WriteLine(limit);
+                    var table = new DefaultDictionary<long, long>();
+                    //var table = new int[step];
+                    for (int i = 0; i < bussTimes.Count; i++)
                     {
-                        if ((timestamp + bust.Value) % bust.Key != 0)
+                        while (bussTimes[i] < limit)
                         {
-                            isFound = false;
-                            break;
+                            //Console.WriteLine(bussTimes[i] - last);
+                            //table[bussTimes[i] - last]++;
+                            table[bussTimes[i]]++;
+                            //if (table[bussTimes[i] - last] == bussTimes.Count) return bussTimes[i];
+                            if (table[bussTimes[i]] == bussTimes.Count) return bussTimes[i];
+                            bussTimes[i] += busses[i].Item1;
                         }
                     }
-                    if (isFound) break;
-                    timestamp += max.Key;
+                    last = limit;
+                    limit += step;
                 }
-                return timestamp;
+                throw new Exception("not found");
             }
         }
 
