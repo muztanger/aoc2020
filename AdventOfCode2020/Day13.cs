@@ -9,17 +9,6 @@ namespace AdventOfCode2020
 {
     public class Day13
     {
-        public sealed class ReverseComparer<T> : IComparer<T>
-        {
-            private readonly IComparer<T> inner;
-            public ReverseComparer() : this(null) { }
-            public ReverseComparer(IComparer<T> inner)
-            {
-                this.inner = inner ?? Comparer<T>.Default;
-            }
-            int IComparer<T>.Compare(T x, T y) { return inner.Compare(y, x); }
-        }
-
         class Schedule
         {
             public static int Earliest(IEnumerable<string> input)
@@ -45,7 +34,6 @@ namespace AdventOfCode2020
             {
                 var lines = input.ToList();
                 var busses = new SortedList<long, long>();
-                //var busses = new SortedList<long, long>(new ReverseComparer<long>());
                 int index = 0;
                 foreach (var bus in lines[1].Split(","))
                 {
@@ -77,7 +65,6 @@ namespace AdventOfCode2020
                         {
                             if (last.ContainsKey(bust.Key))
                             {
-                                Console.WriteLine($"{bust.Key} {timestamp - last[bust.Key]}");
                                 stepChange = timestamp - last[bust.Key];
                                 stepChangeKey = bust.Key;
                             }
@@ -140,7 +127,6 @@ namespace AdventOfCode2020
         [Test]
         public void Part2()
         {
-            //var parsed = Parse(Common.DayInput(nameof(Day13)));
             var result = Schedule.Contest(Common.DayInput(nameof(Day13)));
             Assert.AreEqual(690123192779524L, result);
         }
