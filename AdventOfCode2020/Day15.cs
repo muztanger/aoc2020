@@ -44,21 +44,12 @@ namespace AdventOfCode2020
                 if (turn <= init.Length)
                 {
                     spoken = init[turn - 1];
-                    mem[spoken].Add(turn); 
                 }
                 else
                 {
-                    if (!mem[spoken].IsTwo())
-                    {
-                        spoken = 0;
-                        mem[spoken].Add(turn);
-                    }
-                    else
-                    {
-                        spoken = mem[spoken].Dist();
-                        mem[spoken].Add(turn);
-                    }
+                    spoken = mem[spoken].IsTwo() ? mem[spoken].Dist() : 0;
                 }
+                mem[spoken].Add(turn);
             }
 
             public static MemoryGame Parse(IEnumerable<string> input)
