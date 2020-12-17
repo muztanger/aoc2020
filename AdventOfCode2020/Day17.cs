@@ -66,21 +66,6 @@ namespace AdventOfCode2020
             return result;
         }
 
-        string example1 = @".#.
-..#
-###";
-
-        [Test]
-        public void Part1_Example1()
-        {
-            var cubes = Parse(Common.GetLines(example1));
-            IEnumerable<PosN> neighbourhood = GenerateNeighbourhood();
-
-            for (int i = 0; i < 6; i++) cubes = Iterate(cubes, neighbourhood);
-
-            Assert.AreEqual(112, cubes.Where(x => x.active).Count());
-        }
-
         private static IEnumerable<PosN> GenerateNeighbourhood(int n = 3)
         {
             var result = CubeN(n);
@@ -116,58 +101,64 @@ namespace AdventOfCode2020
 
         private static HashSet<Cube> Iterate(HashSet<Cube> cubes, IEnumerable<PosN> neighbours)
         {
-            var cubesWithNeighbours = new HashSet<Cube>(cubes);
-            foreach (var cube in cubes)
-            {
-                foreach (var d in neighbours)
-                {
-                    var n = new Cube() { pos = cube.pos + d };
-                    if (!cubesWithNeighbours.Contains(n))
-                    {
-                        cubesWithNeighbours.Add(n);
-                    }
-                }
-            }
-            Console.WriteLine($"cubesWithNeighbours count: {cubesWithNeighbours.Where(c => c.active).Count()}");
-
-            var cubesWithNeighbours2 = new HashSet<Cube>(cubesWithNeighbours);
-            foreach (var cube in cubesWithNeighbours)
-            {
-                foreach (var d in neighbours)
-                {
-                    var n = new Cube() { active = false, pos = cube.pos + d };
-                    if (!cubesWithNeighbours2.Contains(n))
-                    {
-                        cubesWithNeighbours2.Add(n);
-                    }
-                }
-            }
-            Console.WriteLine($"cubesWithNeighbours2 count: {cubesWithNeighbours2.Where(c => c.active).Count()}");
+            cubes = AddNeighbours(cubes, neighbours);
 
             var nextCubes = new HashSet<Cube>();
-            foreach (var cube in cubesWithNeighbours2)
+            foreach (var cube in cubes)
             {
                 int count = 0;
                 foreach (var d in neighbours)
                 {
                     var n = new Cube() { pos = cube.pos + d };
-                    if (cubesWithNeighbours2.TryGetValue(n, out var actual) && actual.active)
+                    if (cubes.TryGetValue(n, out var actual) && actual.active)
                     {
                         count++;
                     }
                 }
-                if (count > 0) Console.WriteLine(count);
                 if (cube.active && (count == 2 || count == 3))
                 {
                     nextCubes.Add(new Cube() { active = true, pos = cube.pos });
                 }
-                if (!cube.active && count == 3)
+                else if (!cube.active && count == 3)
                 {
                     nextCubes.Add(new Cube() { active = true, pos = cube.pos });
                 }
             }
 
             return nextCubes;
+        }
+
+        private static HashSet<Cube> AddNeighbours(HashSet<Cube> cubes, IEnumerable<PosN> neighbourhood)
+        {
+            var result = new HashSet<Cube>(cubes);
+            foreach (var cube in cubes)
+            {
+                foreach (var d in neighbourhood)
+                {
+                    var n = new Cube() { pos = cube.pos + d };
+                    if (!result.Contains(n))
+                    {
+                        result.Add(n);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        string example1 = @".#.
+..#
+###";
+
+        [Test]
+        public void Part1_Example1()
+        {
+            var cubes = Parse(Common.GetLines(example1));
+            IEnumerable<PosN> neighbourhood = GenerateNeighbourhood();
+
+            for (int i = 0; i < 6; i++) cubes = Iterate(cubes, neighbourhood);
+
+            Assert.AreEqual(112, cubes.Where(x => x.active).Count());
         }
 
         [Test]
@@ -179,7 +170,6 @@ namespace AdventOfCode2020
             for (int i = 0; i < 6; i++) cubes = Iterate(cubes, neighbourhood);
 
             Assert.AreEqual(382, cubes.Where(x => x.active).Count());
-
         }
 
         [Test]
