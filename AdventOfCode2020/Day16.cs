@@ -202,20 +202,18 @@ namespace AdventOfCode2020
                 loop = false;
                 for (int i = 0; i < validRules.Count; i++)
                 {
-                    if (finalRules[i] == null)
+                    if (finalRules[i] == null && validRules[i].Count == 1)
                     {
-                        if (validRules[i].Count == 1)
+                        // remove from all other
+                        for (int j = 0; j < validRules.Count; j++)
                         {
-                            for (int j = 0; j < validRules.Count; j++)
+                            if (i != j)
                             {
-                                if (i != j)
-                                {
-                                    validRules[j].Remove(validRules[i].First());
-                                    loop = true;
-                                }
+                                validRules[j].Remove(validRules[i].First());
+                                loop = true;
                             }
-                            finalRules[i] = validRules[i].First();
                         }
+                        finalRules[i] = validRules[i].First();
                     }
                 }
             }
@@ -251,18 +249,10 @@ nearby tickets:
         }
 
         [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
         public void Part1()
         {
             var parsed = Parse(Common.DayInput(nameof(Day16)));
-            Assert.AreEqual(0, parsed);
+            Assert.AreEqual(28882, parsed);
         }
 
         [Test]
@@ -288,7 +278,7 @@ nearby tickets:
         public void Part2()
         {
             var parsed = Parse2(Common.DayInput(nameof(Day16)));
-            Assert.AreEqual(0, parsed);
+            Assert.AreEqual(1429779530273L, parsed);
         }
 
     }
