@@ -11,7 +11,7 @@ namespace AdventOfCode2020
         public class Cube : IEquatable<Cube>
         {
             public bool active;
-            public Pos3 pos;
+            public PosN pos;
 
             public override bool Equals(object obj)
             {
@@ -21,7 +21,7 @@ namespace AdventOfCode2020
             public bool Equals(Cube other)
             {
                 return other != null &&
-                       EqualityComparer<Pos3>.Default.Equals(pos, other.pos);
+                       EqualityComparer<PosN>.Default.Equals(pos, other.pos);
             }
 
             public override int GetHashCode()
@@ -41,7 +41,7 @@ namespace AdventOfCode2020
 
 
         }
-        private static HashSet<Cube> Parse(IEnumerable<string> input)
+        private static HashSet<Cube> Parse(IEnumerable<string> input, int n = 3)
         {
             var result = new HashSet<Cube>();
             int y = 0;
@@ -52,7 +52,12 @@ namespace AdventOfCode2020
                 {
                     if (c == '#')
                     {
-                        result.Add(new Cube() { active = true, pos = new Pos3(x, y, 0) });
+                        var pos = new List<int>() { x, y };
+                        for (int i = 2; i < n; i++)
+                        {
+                            pos.Add(0);
+                        }
+                        result.Add(new Cube() { active = true, pos = new PosN(pos) });
                     }
                     x++;
                 }
@@ -61,32 +66,55 @@ namespace AdventOfCode2020
             return result;
         }
 
+        string example1 = @".#.
+..#
+###";
+
         [Test]
         public void Part1_Example1()
         {
-            string input = @".#.
-..#
-###";
-            var cubes = Parse(Common.GetLines(input));
-            List<Pos3> neighbourhood = GenerateNeighbourhood();
+            var cubes = Parse(Common.GetLines(example1));
+            IEnumerable<PosN> neighbourhood = GenerateNeighbourhood();
 
             for (int i = 0; i < 6; i++) cubes = Iterate(cubes, neighbourhood);
 
             Assert.AreEqual(112, cubes.Where(x => x.active).Count());
         }
 
-        private static List<Pos3> GenerateNeighbourhood()
+        private static IEnumerable<PosN> GenerateNeighbourhood(int n = 3)
         {
-            var neighbourhood = new List<Pos3>();
-            for (int x = -1; x <= 1; x++)
-                for (int y = -1; y <= 1; y++)
-                    for (int z = -1; z <= 1; z++)
-                        if (x != 0 || y != 0 || z != 0)
-                            neighbourhood.Add(new Pos3(x, y, z));
+            var result = CubeN(n);
+            var origo = new PosN(Enumerable.Range(0, n).Select(x => 0));
+            Assert.IsTrue(result.Remove(origo));
+            return result;
+        }
+
+        private static HashSet<PosN> CubeN(int n = 3)
+        {
+            var neighbourhood = new HashSet<PosN>();
+            if (n == 1)
+            {
+                for (int i = -1; i <= 1; i++)
+                {
+                    neighbourhood.Add(new PosN(new int[] { i }));
+                }
+            }
+            else
+            {
+                for (int i = -1; i <= 1; i++)
+                {
+                    foreach (var v in CubeN(n - 1))
+                    {
+                        var w = new List<int>(v.values);
+                        w.Add(i);
+                        neighbourhood.Add(new PosN(w));
+                    }
+                }
+            }
             return neighbourhood;
         }
 
-        private static HashSet<Cube> Iterate(HashSet<Cube> cubes, List<Pos3> neighbours)
+        private static HashSet<Cube> Iterate(HashSet<Cube> cubes, IEnumerable<PosN> neighbours)
         {
             var cubesWithNeighbours = new HashSet<Cube>(cubes);
             foreach (var cube in cubes)
@@ -143,46 +171,39 @@ namespace AdventOfCode2020
         }
 
         [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
         public void Part1()
         {
             var cubes = Parse(Common.DayInput(nameof(Day17)));
-            List<Pos3> neighbourhood = GenerateNeighbourhood();
+            IEnumerable<PosN> neighbourhood = GenerateNeighbourhood();
 
             for (int i = 0; i < 6; i++) cubes = Iterate(cubes, neighbourhood);
 
-            Assert.AreEqual(112, cubes.Where(x => x.active).Count());
+            Assert.AreEqual(382, cubes.Where(x => x.active).Count());
 
         }
 
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
+            int n = 4;
+            var cubes = Parse(Common.GetLines(example1), n);
+            IEnumerable<PosN> neighbourhood = GenerateNeighbourhood(n);
 
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            for (int i = 0; i < 6; i++) cubes = Iterate(cubes, neighbourhood);
+
+            Assert.AreEqual(848, cubes.Where(x => x.active).Count());
         }
 
         [Test]
         public void Part2()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day17)));
-            Assert.AreEqual(0, 1);
+            int n = 4;
+            var cubes = Parse(Common.DayInput(nameof(Day17)), n);
+            IEnumerable<PosN> neighbourhood = GenerateNeighbourhood(n);
+
+            for (int i = 0; i < 6; i++) cubes = Iterate(cubes, neighbourhood);
+
+            Assert.AreEqual(2552, cubes.Where(x => x.active).Count());
         }
 
     }
