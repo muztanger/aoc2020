@@ -92,7 +92,6 @@ aaaabbb";
         [Test]
         public void Part1()
         {
-            var parsed = GetRules(Common.DayInput(nameof(Day19)));
             var rules = GetRules(Common.DayInput(nameof(Day19)));
             var expr = rules[0];
             var regex = GetRegex(expr, rules);
@@ -111,14 +110,89 @@ aaaabbb";
                 if (!line.Any()) check = true;
             }
             Console.WriteLine(regex);
-            Assert.AreEqual(2, count);
+            Assert.AreEqual(180, count);
         }
 
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            var parsed = GetRules(Common.GetLines(input));
+            string input = @"42: 9 14 | 10 1
+9: 14 27 | 1 26
+10: 23 14 | 28 1
+1: ""a""
+11: 42 31
+5: 1 14 | 15 1
+19: 14 1 | 14 14
+12: 24 14 | 19 1
+16: 15 1 | 14 14
+31: 14 17 | 1 13
+6: 14 14 | 1 14
+2: 1 24 | 14 4
+0: 8 11
+13: 14 3 | 1 12
+15: 1 | 14
+17: 14 2 | 1 7
+23: 25 1 | 22 14
+28: 16 1
+4: 1 1
+20: 14 14 | 1 15
+3: 5 14 | 16 1
+27: 1 6 | 14 18
+14: ""b""
+21: 14 1 | 1 14
+25: 1 1 | 1 14
+22: 14 14
+8: 42
+26: 14 22 | 1 20
+18: 15 15
+7: 14 5 | 1 21
+24: 14 1
+
+abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa
+bbabbbbaabaabba
+babbbbaabbbbbabbbbbbaabaaabaaa
+aaabbbbbbaaaabaababaabababbabaaabbababababaaa
+bbbbbbbaaaabbbbaaabbabaaa
+bbbababbbbaaaaaaaabbababaaababaabab
+ababaaaaaabaaab
+ababaaaaabbbaba
+baabbaaaabbaaaababbaababb
+abbbbabbbbaaaababbbbbbaaaababb
+aaaaabbaabaaaaababaa
+aaaabbaaaabbaaa
+aaaabbaabbaaaaaaabbbabbbaaabbaabaaa
+babaaabbbaaabaababbaabababaaab
+aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba";
+            var rules = GetRules(Common.GetLines(input));
+
+            //8: 42
+            //8: 42 | 42 8
+            rules[8] = "";
+
+            //11: 42 31
+            //11: 42 31 | 42 11 31
+            //31: 14 17 | 1 13
+            ///osv
+
+
+            var expr = rules[0];
+            var regex = GetRegex(expr, rules);
+            regex = "^" + regex + "$";
+            var count = 0;
+            bool check = false;
+            foreach (var line in Common.GetLines(input))
+            {
+                if (check)
+                {
+                    if (Regex.IsMatch(line, regex))
+                    {
+                        count++;
+                    }
+                }
+                if (!line.Any()) check = true;
+            }
+            Console.WriteLine(regex);
+            Assert.AreEqual(2, count);
             Assert.AreEqual(0, 1);
         }
 
