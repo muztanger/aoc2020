@@ -9,7 +9,9 @@ namespace AdventOfCode2020
     public class DefaultDictionary<TKey, TValue> where TKey : notnull
     {
         readonly Dictionary<TKey, TValue> mDict;
-        
+
+        public Dictionary<TKey, TValue> Value => mDict;
+
         public DefaultDictionary()
         {
             mDict = new Dictionary<TKey, TValue>();

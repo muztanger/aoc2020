@@ -31,8 +31,9 @@ namespace AdventOfCode2020
             };
 
             private bool initialized = false;
-            public int[] sides = new int[4];
-            public bool[,] values = new bool[10, 10];
+            public int[] Sides = new int[4];
+            public int[] InvertedSides = new int[4];
+            public bool[,] Values = new bool[10, 10];
 
             public void Init()
             {
@@ -45,12 +46,26 @@ namespace AdventOfCode2020
                     for (int i = 0; i < 10; i++)
                     {
                         x <<= 1;
-                        if (values[i, 0])
+                        if (Values[i, 0])
                         {
                             x |= 0x1;
                         }
                     }
-                    sides[(int) Side.Top] = x;        
+                    Sides[(int) Side.Top] = x;        
+                }
+
+                // inverted top
+                {
+                    int x = 0;
+                    for (int i = 9; i >= 0; i--)
+                    {
+                        x <<= 1;
+                        if (Values[i, 0])
+                        {
+                            x |= 0x1;
+                        }
+                    }
+                    InvertedSides[(int)Side.Top] = x;
                 }
 
                 // right
@@ -59,12 +74,26 @@ namespace AdventOfCode2020
                     for (int i = 0; i < 10; i++)
                     {
                         x <<= 1;
-                        if (values[9, i])
+                        if (Values[9, i])
                         {
                             x |= 0x1;
                         }
                     }
-                    sides[(int)Side.Right] = x;
+                    Sides[(int)Side.Right] = x;
+                }
+
+                // inverted right
+                {
+                    int x = 0;
+                    for (int i = 9; i >= 0; i--)
+                    {
+                        x <<= 1;
+                        if (Values[9, i])
+                        {
+                            x |= 0x1;
+                        }
+                    }
+                    InvertedSides[(int)Side.Right] = x;
                 }
 
                 // bottom
@@ -73,12 +102,26 @@ namespace AdventOfCode2020
                     for (int i = 0; i < 10; i++)
                     {
                         x <<= 1;
-                        if (values[i, 9])
+                        if (Values[i, 9])
                         {
                             x |= 0x1;
                         }
                     }
-                    sides[(int)Side.Bottom] = x;
+                    Sides[(int)Side.Bottom] = x;
+                }
+
+                // inverted bottom
+                {
+                    int x = 0;
+                    for (int i = 9; i >= 0; i--)
+                    {
+                        x <<= 1;
+                        if (Values[i, 9])
+                        {
+                            x |= 0x1;
+                        }
+                    }
+                    InvertedSides[(int)Side.Bottom] = x;
                 }
 
                 // left
@@ -87,12 +130,26 @@ namespace AdventOfCode2020
                     for (int i = 0; i < 10; i++)
                     {
                         x <<= 1;
-                        if (values[0, i])
+                        if (Values[0, i])
                         {
                             x |= 0x1;
                         }
                     }
-                    sides[(int)Side.Left] = x;
+                    Sides[(int)Side.Left] = x;
+                }
+
+                // inverted left
+                {
+                    int x = 0;
+                    for (int i = 9; i >= 0; i--)
+                    {
+                        x <<= 1;
+                        if (Values[0, i])
+                        {
+                            x |= 0x1;
+                        }
+                    }
+                    InvertedSides[(int)Side.Left] = x;
                 }
             }
 
@@ -104,7 +161,7 @@ namespace AdventOfCode2020
                     if (j != 0) result.Append("\n");
                     for (int i = 0; i < 10; i++)
                     {
-                        result.Append(values[i, j] ? '#' : '.');
+                        result.Append(Values[i, j] ? '#' : '.');
                     }
                 }
                 return result.ToString();
@@ -136,7 +193,7 @@ namespace AdventOfCode2020
                     Assert.AreEqual(10, line.Length);
                     for (int i = 0; i < 10; i++)
                     {
-                        tile.values[i, j] = line[i] == '#' ? true : false;
+                        tile.Values[i, j] = line[i] == '#' ? true : false;
                     }
                     j++;
                 }
@@ -262,14 +319,39 @@ Tile 3079:
 ..#.###...";
             var parsed = Parse(Common.GetLines(input));
 
-            foreach (var tile in parsed)
-            {
-                Console.WriteLine(tile.Key);
-                Console.WriteLine(string.Join(",", tile.Value.sides.Select((x, i) => $"{(Side) i}: {x}")));
-                Console.WriteLine(tile.Value);
-            }
 
-            Assert.AreEqual(0, 1);
+            var nCount = new DefaultDictionary<int, int>();
+            foreach (var t1 in parsed)
+            {
+                foreach (var t2 in parsed)
+                {
+                    if (t1.Key == t2.Key) continue;
+                    foreach (var k in t1.Value.Sides)
+                    {
+                        if (t2.Value.Sides.Contains(k) || t2.Value.InvertedSides.Contains(k))
+                        {
+                            nCount[t1.Key]++;
+                        }
+                    }
+                    foreach (var k in t1.Value.InvertedSides)
+                    {
+                        if (t2.Value.Sides.Contains(k) || t2.Value.InvertedSides.Contains(k))
+                        {
+                            nCount[t1.Key]++;
+                        }
+                    }
+                }
+            }
+            var min = Convert.ToInt64(nCount.Value.Select(x => x.Value).Min());
+            long result = 1L;
+            foreach (var kv in nCount.Value)
+            {
+                if (kv.Value == min)
+                {
+                    result *= kv.Key;
+                }
+            }
+            Assert.AreEqual(20899048083289, result);
         }
 
         [Test]
@@ -284,7 +366,38 @@ Tile 3079:
         public void Part1()
         {
             var parsed = Parse(Common.DayInput(nameof(Day20)));
-            Assert.AreEqual(0, 1);
+            var nCount = new DefaultDictionary<int, int>();
+            foreach (var t1 in parsed)
+            {
+                foreach (var t2 in parsed)
+                {
+                    if (t1.Key == t2.Key) continue;
+                    foreach (var k in t1.Value.Sides)
+                    {
+                        if (t2.Value.Sides.Contains(k) || t2.Value.InvertedSides.Contains(k))
+                        {
+                            nCount[t1.Key]++;
+                        }
+                    }
+                    foreach (var k in t1.Value.InvertedSides)
+                    {
+                        if (t2.Value.Sides.Contains(k) || t2.Value.InvertedSides.Contains(k))
+                        {
+                            nCount[t1.Key]++;
+                        }
+                    }
+                }
+            }
+            var min = Convert.ToInt64(nCount.Value.Select(x => x.Value).Min());
+            long result = 1L;
+            foreach (var kv in nCount.Value)
+            {
+                if (kv.Value == min)
+                {
+                    result *= kv.Key;
+                }
+            }
+            Assert.AreEqual(20899048083289, result);
         }
 
         [Test]
