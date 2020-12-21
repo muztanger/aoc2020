@@ -10,7 +10,7 @@ namespace AdventOfCode2020
     {
         readonly Dictionary<TKey, TValue> mDict;
 
-        public Dictionary<TKey, TValue> Value => mDict;
+        public Dictionary<TKey, TValue> Inner => mDict;
 
         public DefaultDictionary()
         {

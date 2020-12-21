@@ -342,9 +342,9 @@ Tile 3079:
                     }
                 }
             }
-            var min = Convert.ToInt64(nCount.Value.Select(x => x.Value).Min());
+            var min = Convert.ToInt64(nCount.Inner.Select(x => x.Value).Min());
             long result = 1L;
-            foreach (var kv in nCount.Value)
+            foreach (var kv in nCount.Inner)
             {
                 if (kv.Value == min)
                 {
@@ -388,9 +388,9 @@ Tile 3079:
                     }
                 }
             }
-            var min = Convert.ToInt64(nCount.Value.Select(x => x.Value).Min());
+            var min = Convert.ToInt64(nCount.Inner.Select(x => x.Value).Min());
             long result = 1L;
-            foreach (var kv in nCount.Value)
+            foreach (var kv in nCount.Inner)
             {
                 if (kv.Value == min)
                 {
