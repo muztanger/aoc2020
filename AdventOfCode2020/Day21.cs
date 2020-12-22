@@ -117,7 +117,7 @@ sqjhc mxmxvkd sbzzf (contains fish)";
         public void Part1()
         {
             var parsed = Parse(Common.DayInput(nameof(Day21)));
-            Assert.AreEqual(0, 1);
+            Assert.AreEqual(2389, parsed);
         }
 
         [Test]
