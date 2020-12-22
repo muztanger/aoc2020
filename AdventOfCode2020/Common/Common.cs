@@ -167,6 +167,18 @@ namespace AdventOfCode2020
             }
             return result;
         }
+
+        public static int GetSequenceHashCode<T>(this IEnumerable<T> sequence)
+        {
+            const int seed = 743;
+            const int modifier = 71;
+
+            unchecked
+            {
+                return sequence.Aggregate(seed, (current, item) =>
+                    (current * modifier) + item.GetHashCode());
+            }
+        }
     }
 
     public class GeneralizedComparer<T> : IComparer<T> where T : IComparable
