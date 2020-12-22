@@ -179,6 +179,12 @@ namespace AdventOfCode2020
                     (current * modifier) + item.GetHashCode());
             }
         }
+
+        public static int GetSequenceHashCodeFromString<T>(this IEnumerable<T> sequence)
+        {
+            return string.Join(",", sequence).GetHashCode();
+        }
+
     }
 
     public class GeneralizedComparer<T> : IComparer<T> where T : IComparable

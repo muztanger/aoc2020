@@ -8,6 +8,7 @@ namespace AdventOfCode2020
 {
     public class Day22
     {
+        static int globalGameCount = 1;
         class Game
         {
             readonly Player player1;
@@ -16,18 +17,26 @@ namespace AdventOfCode2020
             int game;
             int winner = 0;
             internal int Winner => winner;
-            internal long Score => Math.Max(player1.Score(), player2.Score());
+            internal long Score()
+            {
+                return winner switch
+                {
+                    1 => player1.Score(),
+                    2 => player2.Score(),
+                    _ => Math.Max(player1.Score(), player2.Score()),
+                };
+            }
             
             internal Game(int game, Player player1, Player player2)
             {
-                this.game = game;
+                this.game = globalGameCount++;
                 this.player1 = player1;
                 this.player2 = player2;
             }
 
             public Game(int game, IEnumerable<int> deck1, IEnumerable<int> deck2)
             {
-                this.game = game;
+                this.game = globalGameCount++;
                 this.player1 = new Player("Player 1");
                 foreach (var x in deck1)
                 {
@@ -52,7 +61,7 @@ namespace AdventOfCode2020
 
                 if (!player1.LogDeck())
                 {
-                    winner = 1;
+                    winner = 2;
                     Console.WriteLine($"The winner of game {game} is player {winner}!");
                     return false;
                 }
@@ -83,6 +92,7 @@ namespace AdventOfCode2020
                 }
                 if (winner != 0)
                 {
+                    Console.WriteLine($"Player {winner} wins round {round} of game {game}!");
                     Console.WriteLine($"The winner of game {game} is player {winner}!");
                     return false;
                 }
@@ -153,7 +163,7 @@ namespace AdventOfCode2020
 
             internal bool LogDeck()
             {
-                int hash = deck.GetSequenceHashCode();
+                int hash = deck.GetSequenceHashCodeFromString();
                 return deckHashes.Add(hash);
             }
 
@@ -165,6 +175,7 @@ namespace AdventOfCode2020
                 long m = deck.Count;
                 foreach (var card in deck)
                 {
+                    Console.WriteLine($"{m} * {card}");
                     result += m * card;
                     m--;
                 }
@@ -281,7 +292,7 @@ Player 2:
             var parsed = Parse(Common.GetLines(example1));
             var game = new Game(1, parsed[0], parsed[1]);
             while (game.Round());
-            Assert.AreEqual(291, game.Score);
+            Assert.AreEqual(291, game.Score());
         }
 
         [Test]
@@ -289,9 +300,12 @@ Player 2:
         {
             var parsed = Parse(Common.DayInput(nameof(Day22)));
             var game = new Game(1, parsed[0], parsed[1]);
-            while (game.Round()) ;
-            Assert.AreNotEqual(33901, game.Score);
-            Assert.AreEqual(291, game.Score);
+            while (game.Round());
+            Assert.AreNotEqual(33901, game.Score()); // your answer is too high
+            Assert.AreNotEqual(32460, game.Score());
+            Assert.AreNotEqual(31467, game.Score()); // your answer is too high
+
+            Assert.AreEqual(291, game.Score());
         }
 
     }
