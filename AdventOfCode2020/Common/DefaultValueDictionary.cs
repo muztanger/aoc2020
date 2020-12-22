@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AdventOfCode2020
 {
-    public class DefaultValueDictionary<TKey, TValue>
+    public class DefaultValueDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
         where TKey : notnull
     {
         readonly Dictionary<TKey, TValue> mDict;
@@ -38,6 +39,16 @@ namespace AdventOfCode2020
             var result = mDefaultValueFactory();
             mDict[key] = result;
             return result;
+        }
+
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        {
+            return mDict.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return mDict.GetEnumerator();
         }
     }
 }
