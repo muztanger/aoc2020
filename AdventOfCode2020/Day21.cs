@@ -214,7 +214,7 @@ sqjhc mxmxvkd sbzzf (contains fish)";
         public void Part2()
         {
             var parsed = Parse2(Common.DayInput(nameof(Day21)));
-            Assert.AreEqual("mmop", parsed);
+            Assert.AreEqual("fsr,skrxt,lqbcg,mgbv,dvjrrkv,ndnlm,xcljh,zbhp", parsed);
         }
 
     }
