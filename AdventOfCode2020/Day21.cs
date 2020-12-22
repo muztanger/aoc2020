@@ -184,10 +184,11 @@ namespace AdventOfCode2020
             return string.Join(",", result.OrderBy(x => x.Key).Select(kv => kv.Value));
         }
 
-            string example1 = @"mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+        string example1 = @"mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
 trh fvjkl sbzzf mxmxvkd (contains dairy)
 sqjhc fvjkl (contains soy)
 sqjhc mxmxvkd sbzzf (contains fish)";
+
         [Test]
         public void Part1_Example1()
         {
