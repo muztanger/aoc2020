@@ -10,24 +10,151 @@ namespace AdventOfCode2020
     {
         class Game
         {
-            Player p1;
-            Player p2;
+            readonly Player player1;
+            readonly Player player2;
+            int round = 0;
+            int game;
+            int winner = 0;
+            internal int Winner => winner;
+            internal long Score => Math.Max(player1.Score(), player2.Score());
+            
+            internal Game(int game, Player player1, Player player2)
+            {
+                this.game = game;
+                this.player1 = player1;
+                this.player2 = player2;
+            }
 
+            public Game(int game, IEnumerable<int> deck1, IEnumerable<int> deck2)
+            {
+                this.game = game;
+                this.player1 = new Player("Player 1");
+                foreach (var x in deck1)
+                {
+                    this.player1.Add(x);
+                }
+                this.player2 = new Player("Player2");
+                foreach (var x in deck2)
+                {
+                    this.player2.Add(x);
+                }
+            }
 
+            internal bool Round()
+            {
+                if (winner != 0) return false;
+                round++;
+                if (round == 1)
+                {
+                    Console.WriteLine($"=== Game {game} ===");
+                    Console.WriteLine();
+                }
+
+                if (!player1.LogDeck())
+                {
+                    winner = 1;
+                    Console.WriteLine($"The winner of game {game} is player {winner}!");
+                    return false;
+                }
+                if (!player2.LogDeck())
+                {
+                    winner = 1;
+                    Console.WriteLine($"The winner of game {game} is player {winner}!");
+                    return false;
+                }
+
+                Console.WriteLine($"-- Round {round} (Game {game}) --");
+                Console.WriteLine($"Player 1's deck: " + player1.DeckToString());
+                Console.WriteLine($"Player 2's deck: " + player2.DeckToString());
+                var card1 = player1.Draw();
+                Console.WriteLine($"Player 1 plays: {card1}");
+                var card2 = player2.Draw();
+                Console.WriteLine($"Player 2 plays: {card2}");
+
+                if (player1.DeckSize == 0)
+                {
+                    player2.Take(card2, card1);
+                    winner = 2;
+                }
+                else if (player2.DeckSize == 0)
+                {
+                    player1.Take(card1, card2);
+                    winner = 1;
+                }
+                if (winner != 0)
+                {
+                    Console.WriteLine($"The winner of game {game} is player {winner}!");
+                    return false;
+                }
+
+                int roundWinner;
+                if (card1 <= player1.DeckSize && card2 <= player2.DeckSize)
+                {
+                    // play a sub game!
+                    Console.WriteLine("Playing a sub-game to determine the winner...");
+                    Console.WriteLine();
+                    var subGame = new Game(game + 1, player1.CopySubDeck(card1), player2.CopySubDeck(card2));
+                    while (subGame.Round());
+                    roundWinner = subGame.Winner;
+                    Console.WriteLine();
+                    Console.WriteLine($"...anyway, back to game {game}.");
+                }
+                else
+                {
+                    // at least one player must not have enough cards left in their deck to recurse; 
+                    // the winner of the round is the player with the higher-value card.
+                    if (card1 > card2)
+                    {
+                        roundWinner = 1;
+                    }
+                    else
+                    {
+                        roundWinner = 2;
+                    }
+                }
+                Console.WriteLine($"Player {roundWinner} wins round {round} of game {game}!");
+                Console.WriteLine();
+                if (roundWinner == 1)
+                {
+                    player1.Take(card1, card2);
+                }
+                else if (roundWinner == 2)
+                {
+                    player2.Take(card2, card1);
+                }
+
+                return winner == 0;
+            }
         }
 
         class Player
         {
-            internal string Name;
+            internal string Name { get; }
             Queue<int> deck = new Queue<int>();
             HashSet<int> deckHashes = new HashSet<int>();
+
+            public Player(string name)
+            {
+                Name = name;
+            }
+
+            public Player(Player player1)
+            {
+                Name = player1.Name;
+                deck = new Queue<int>(player1.deck);
+            }
+
+            internal IEnumerable<int> CopySubDeck(int n)
+            {
+                return deck.Take(n);
+            }
+
             internal int DeckSize => deck.Count();
 
-            bool PlayedDeck()
+            internal bool LogDeck()
             {
                 int hash = deck.GetSequenceHashCode();
-                if (deckHashes.Contains(hash)) return true;
-                return false;
+                return deckHashes.Add(hash);
             }
 
             internal long Score()
@@ -44,16 +171,26 @@ namespace AdventOfCode2020
                 return result;
             }
 
-            internal int Play()
+            internal int Draw()
             {
                 return deck.Dequeue();
             }
 
-            internal void Take(int card)
+            internal void Take(int card1, int card2)
+            {
+                deck.Enqueue(card1);
+                deck.Enqueue(card2);
+            }
+
+            internal void Add(int card)
             {
                 deck.Enqueue(card);
             }
 
+            internal string DeckToString()
+            {
+                return string.Join(", ", deck);
+            }
         }
 
         private static List<Player> Parse(IEnumerable<string> input)
@@ -67,24 +204,18 @@ namespace AdventOfCode2020
                 if (line.StartsWith("Player"))
                 {
                     if (player != null) result.Add(player);
-                    player = new Player()
-                    {
-                        Name = line[..^1]
-                    };
+                    player = new Player(name: line[..^1]);
                 }
                 else
                 {
-                    player.Take(int.Parse(line));
+                    player.Add(int.Parse(line));
                 }
             }
             result.Add(player);
             return result;
         }
 
-        [Test]
-        public void Part1_Example1()
-        {
-            string input = @"Player 1:
+        string example1 = @"Player 1:
 9
 2
 6
@@ -97,20 +228,21 @@ Player 2:
 4
 7
 10";
-            var players = Parse(Common.GetLines(input));
+        [Test]
+        public void Part1_Example1()
+        {
+            var players = Parse(Common.GetLines(example1));
             while (players[0].DeckSize > 0 && players[1].DeckSize > 0)
             {
-                var c1 = players[0].Play();
-                var c2 = players[1].Play();
+                var c1 = players[0].Draw();
+                var c2 = players[1].Draw();
                 if (c1 > c2)
                 {
-                    players[0].Take(c1);
-                    players[0].Take(c2);
+                    players[0].Take(c1, c2);
                 }
                 else
                 {
-                    players[1].Take(c2);
-                    players[1].Take(c1);
+                    players[1].Take(c2, c1);
                 }
             }
 
@@ -126,17 +258,15 @@ Player 2:
             var players = Parse(Common.DayInput(nameof(Day22)));
             while (players[0].DeckSize > 0 && players[1].DeckSize > 0)
             {
-                var c1 = players[0].Play();
-                var c2 = players[1].Play();
+                var c1 = players[0].Draw();
+                var c2 = players[1].Draw();
                 if (c1 > c2)
                 {
-                    players[0].Take(c1);
-                    players[0].Take(c2);
+                    players[0].Take(c1, c2);
                 }
                 else
                 {
-                    players[1].Take(c2);
-                    players[1].Take(c1);
+                    players[1].Take(c2, c1);
                 }
             }
 
@@ -148,24 +278,20 @@ Player 2:
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            var parsed = Parse(Common.GetLines(example1));
+            var game = new Game(1, parsed[0], parsed[1]);
+            while (game.Round());
+            Assert.AreEqual(291, game.Score);
         }
 
         [Test]
         public void Part2()
         {
             var parsed = Parse(Common.DayInput(nameof(Day22)));
-            Assert.AreEqual(0, 1);
+            var game = new Game(1, parsed[0], parsed[1]);
+            while (game.Round()) ;
+            Assert.AreNotEqual(33901, game.Score);
+            Assert.AreEqual(291, game.Score);
         }
 
     }
