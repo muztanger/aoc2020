@@ -8,7 +8,7 @@ namespace AdventOfCode2020
 {
     public class Day23
     {
-        private static Node Parse(IEnumerable<string> input)
+        private static Node Parse(IEnumerable<string> input, int fill = 0)
         {
             var list = new List<Node>();
             Node.Count = 0;
@@ -18,6 +18,14 @@ namespace AdventOfCode2020
                 Node.Count++;
             }
 
+            if (fill > 0)
+            {
+                while (list.Count < fill)
+                {
+                    list.Add(new Node() { value = list.Count + 1 });
+                    Node.Count++;
+                }
+            }
             for (int i = 0; i < list.Count - 1; i++)
             {
                 list[i].next = list[i + 1];
@@ -38,11 +46,18 @@ namespace AdventOfCode2020
             private readonly Node start;
             private Node current;
             private int move = 0;
-
+            private readonly Dictionary<int, Node> dict;
             internal CrabCups(Node cups)
             {
                 this.start = cups;
                 this.current = cups;
+                this.dict = new Dictionary<int, Node>();
+                var node = start;
+                for (int i = 0; i < Node.Count; i++)
+                {
+                    dict[node.value] = node;
+                    node = node.next;
+                }
             }
 
             internal void Move()
@@ -71,12 +86,12 @@ namespace AdventOfCode2020
                 }
 
                 // find destination
-                Node destinationNode;
-                {
-                    var node = current;
-                    while (node.value != destinationValue) node = node.next;
-                    destinationNode = node;
-                }
+                Node destinationNode = dict[destinationValue];
+                //{
+                //    var node = current;
+                //    while (node.value != destinationValue) node = node.next;
+                //    destinationNode = node;
+                //}
 
                 // pick up three cups
                 Node threeCups = current.next;
@@ -116,25 +131,24 @@ namespace AdventOfCode2020
                 current = current.next;
             }
 
-            private void PrintCups()
-            {
-                var line = new StringBuilder("cups:");
-                Node node = start;
-                for (int i = 0; i < Node.Count; i++)
-                {
-                    line.Append(' ');
-                    if (node == current) line.Append('(');
-                    line.Append(node.value);
-                    if (node == current) line.Append(')');
-                    node = node.next;
-                }
-                Console.WriteLine(line.ToString());
-            }
+            //private void PrintCups()
+            //{
+            //    var line = new StringBuilder("cups:");
+            //    Node node = start;
+            //    for (int i = 0; i < Node.Count; i++)
+            //    {
+            //        line.Append(' ');
+            //        if (node == current) line.Append('(');
+            //        line.Append(node.value);
+            //        if (node == current) line.Append(')');
+            //        node = node.next;
+            //    }
+            //    Console.WriteLine(line.ToString());
+            //}
 
             internal string Result()
             {
-                Node node = start;
-                while (node.value != 1) node = node.next;
+                Node node = dict[1];
                 node = node.next;
                 var result = new StringBuilder();
                 for (int i = 0; i < Node.Count - 1; i++)
@@ -143,6 +157,12 @@ namespace AdventOfCode2020
                     node = node.next;
                 }
                 return result.ToString();
+            }
+
+            internal long Result2()
+            {
+                Node node = dict[1];
+                return node.next.value * (long)node.next.next.value;
             }
 
             private int Decrease(int destination)
@@ -154,11 +174,12 @@ namespace AdventOfCode2020
             }
         }
 
+        string example1 = @"389125467";
+
         [Test]
         public void Part1_Example1()
         {
-            string input = @"389125467";
-            var parsed = Parse(Common.GetLines(input));
+            var parsed = Parse(Common.GetLines(example1));
             var game = new CrabCups(parsed);
             for (int i = 0; i < 100; i++) game.Move();
 
@@ -178,24 +199,25 @@ namespace AdventOfCode2020
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
+            var parsed = Parse(Common.GetLines(example1), 1000000);
+            Assert.AreEqual(1000000, Node.Count);
 
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            var game = new CrabCups(parsed);
+            for (int i = 0; i < 10000000; i++) game.Move();
+
+            Assert.AreEqual(149245887792, game.Result2());
         }
 
         [Test]
         public void Part2()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day23)));
-            Assert.AreEqual(0, 1);
+            var parsed = Parse(Common.DayInput(nameof(Day23)), 1000000);
+            Assert.AreEqual(1000000, Node.Count);
+
+            var game = new CrabCups(parsed);
+            for (int i = 0; i < 10000000; i++) game.Move();
+
+            Assert.AreEqual(8456532414, game.Result2());
         }
 
     }
