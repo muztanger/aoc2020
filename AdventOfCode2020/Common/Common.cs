@@ -150,6 +150,14 @@ namespace AdventOfCode2020
             b = temp;
         }
 
+        public static IList<T> Swap<T>(this IList<T> list, int indexA, int indexB)
+        {
+            T tmp = list[indexA];
+            list[indexA] = list[indexB];
+            list[indexB] = tmp;
+            return list;
+        }
+
         // https://stackoverflow.com/questions/7802822/all-possible-combinations-of-a-list-of-values
         public static List<List<T>> GetAllCombos<T>(List<T> list)
         {
