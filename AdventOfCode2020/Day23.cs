@@ -8,84 +8,149 @@ namespace AdventOfCode2020
 {
     public class Day23
     {
-        private static List<int> Parse(IEnumerable<string> input)
+        private static Node Parse(IEnumerable<string> input)
         {
-            return new List<int>(input.First().Select(x => int.Parse("" + x)));
+            var list = new List<Node>();
+            Node.Count = 0;
+            foreach (var x in input.First().Select(x => int.Parse("" + x)))
+            {
+                list.Add(new Node() { value = x });
+                Node.Count++;
+            }
+
+            for (int i = 0; i < list.Count - 1; i++)
+            {
+                list[i].next = list[i + 1];
+            }
+            list.Last().next = list.First();
+            return list.First();
+        }
+
+        internal class Node
+        {
+            internal static int Count; // pretty scary ;-)
+            internal int value;
+            internal Node next;
         }
 
         class CrabCups
         {
-            private readonly List<int> cups;
-            private int currentIndex = 0;
+            private readonly Node start;
+            private Node current;
             private int move = 0;
 
-            internal CrabCups(List<int> cups)
+            internal CrabCups(Node cups)
             {
-                this.cups = cups;
+                this.start = cups;
+                this.current = cups;
             }
 
             internal void Move()
             {
                 move++;
 
-                int destination = cups[currentIndex] - 1;
-                if (destination <= 0) destination += cups.Count;
+                int destinationValue = Decrease(current.value);
 
-                // Find allowed destination
+                // Find allowed destination value
+                Node currentStart = current;
                 bool loop = true;
                 while (loop)
                 {
                     loop = false;
+                    var node = currentStart;
                     for (int i = 0; i < 3; i++)
                     {
-                        int check = (currentIndex + 1 + i) % cups.Count;
-                        if (destination == cups[check])
+                        node = node.next;
+                        if (destinationValue == node.value)
                         {
                             loop = true;
-                            destination--;
-                            if (destination < 0) destination += cups.Count;
+                            destinationValue = Decrease(destinationValue);
                             break;
                         }
                     }
                 }
 
-                // find destination index
-                int destinationIndex = cups.IndexOf(destination);
+                // find destination
+                Node destinationNode;
+                {
+                    var node = current;
+                    while (node.value != destinationValue) node = node.next;
+                    destinationNode = node;
+                }
 
-                Console.WriteLine($"-- move {move} --");
-                {
-                    var line = new StringBuilder("cups:");
-                    for (int i = 0; i < cups.Count; i++)
-                    {
-                        line.Append(' ');
-                        if (i == currentIndex) line.Append('(');
-                        line.Append(cups[i]);
-                        if (i == currentIndex) line.Append(')');
-                    }
-                    Console.WriteLine(line.ToString());
-                }
-                {
-                    var line = new StringBuilder("pick up: ");
-                    int j = (currentIndex + 1) % cups.Count;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        if (i != 0) line.Append(' ');
-                        line.Append(cups[j]);
-                        j = (j + 1) % cups.Count;
-                    }
-                    Console.WriteLine(line.ToString());
-                }
-                Console.WriteLine($"destination: {destination}");
+                // pick up three cups
+                Node threeCups = current.next;
 
-                // Do some swapping
-                int swapIndex = (currentIndex + 1) % cups.Count;
-                for (int i = 0; i < 3; i++)
+                // print stuff
+                //Console.WriteLine($"-- move {move} --");
+                //PrintCups();
+                //{
+                //    var line = new StringBuilder("pick up: ");
+                //    var node = threeCups;
+                //    for (int i = 0; i < 3; i++)
+                //    {
+                //        if (i != 0) line.Append(' ');
+                //        line.Append(node.value);
+                //        node = node.next;
+                //    }
+                //    Console.WriteLine(line.ToString());
+                //}
+                //Console.WriteLine($"destination: {destinationValue}");
+
+                // switch next on current to after the three cups (part of pick up)
                 {
-                    cups.Swap(swapIndex, destinationIndex);
-                    //destinationIndex = (destinationIndex + 1) % cups.Count;
-                    swapIndex = (swapIndex + 1) % cups.Count;
+                    var node = threeCups;
+                    for (int i = 0; i < 3; i++) node = node.next;
+                    current.next = node;
                 }
-                currentIndex = (currentIndex + 1) % cups.Count;
+
+                // place three cups directly after the destination cup
+                {
+                    var save = destinationNode.next;
+                    destinationNode.next = threeCups;
+                    var node = threeCups;
+                    for (int i = 0; i < 2; i++) node = node.next;
+                    node.next = save;
+                }
+
+                current = current.next;
+            }
+
+            private void PrintCups()
+            {
+                var line = new StringBuilder("cups:");
+                Node node = start;
+                for (int i = 0; i < Node.Count; i++)
+                {
+                    line.Append(' ');
+                    if (node == current) line.Append('(');
+                    line.Append(node.value);
+                    if (node == current) line.Append(')');
+                    node = node.next;
+                }
+                Console.WriteLine(line.ToString());
+            }
+
+            internal string Result()
+            {
+                Node node = start;
+                while (node.value != 1) node = node.next;
+                node = node.next;
+                var result = new StringBuilder();
+                for (int i = 0; i < Node.Count - 1; i++)
+                {
+                    result.Append(node.value);
+                    node = node.next;
+                }
+                return result.ToString();
+            }
+
+            private int Decrease(int destination)
+            {
+                int result = destination - 2; // -1 and shift to zero-based
+                if (result < 0) result += Node.Count;
+                result++; // shift back to 1 based
+                return result;
             }
         }
 
@@ -96,7 +161,8 @@ namespace AdventOfCode2020
             var parsed = Parse(Common.GetLines(input));
             var game = new CrabCups(parsed);
             for (int i = 0; i < 100; i++) game.Move();
-            Assert.AreEqual(0, 1);
+
+            Assert.AreEqual("67384529", game.Result());
         }
 
         [Test]
