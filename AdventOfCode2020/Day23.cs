@@ -166,18 +166,13 @@ namespace AdventOfCode2020
         }
 
         [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
         public void Part1()
         {
             var parsed = Parse(Common.DayInput(nameof(Day23)));
-            Assert.AreEqual(0, 1);
+            var game = new CrabCups(parsed);
+            for (int i = 0; i < 100; i++) game.Move();
+
+            Assert.AreEqual("52937846", game.Result());
         }
 
         [Test]
