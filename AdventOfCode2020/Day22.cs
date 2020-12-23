@@ -59,18 +59,18 @@ namespace AdventOfCode2020
                     Console.WriteLine();
                 }
 
-                if (!player1.LogDeck())
-                {
-                    winner = 2;
-                    Console.WriteLine($"The winner of game {game} is player {winner}!");
-                    return false;
-                }
-                if (!player2.LogDeck())
+                if (!player1.LogDeck() && (!player2.LogDeck()))
                 {
                     winner = 1;
                     Console.WriteLine($"The winner of game {game} is player {winner}!");
                     return false;
                 }
+                //if )
+                //{
+                //    winner = 1;
+                //    Console.WriteLine($"The winner of game {game} is player {winner}!");
+                //    return false;
+                //}
 
                 Console.WriteLine($"-- Round {round} (Game {game}) --");
                 Console.WriteLine($"Player 1's deck: " + player1.DeckToString());
