@@ -183,6 +183,38 @@ wseweeenwnesenwwwswnew";
             {
                 return tiles.Where(x => x.isWhite == false).Count();
             }
+
+            internal void Print()
+            {
+                var max = new Pos(tiles.First().pos);
+                var min = new Pos(tiles.First().pos);
+                foreach (var pos in tiles.Select(x => x.pos))
+                {
+                    if (pos.x > max.x) max.x = pos.x;
+                    if (pos.y > max.y) max.y = pos.y;
+                    if (pos.x < min.x) min.x = pos.x;
+                    if (pos.y < min.y) min.y = pos.y;
+                }
+                for (int j = min.y; j < max.y; j++)
+                {
+                    var line = new StringBuilder();
+                    if (Math.Abs(j) % 2 == 0) line.Append(' ');
+                    for (int i = min.x; i < max.x; i++)
+                    {
+                        var tile = new Tile() { pos = new Pos(i, j) };
+                        if (tiles.TryGetValue(tile, out Tile found) && !found.isWhite)
+                        {
+                            line.Append('#');
+                        }
+                        else
+                        {
+                            line.Append('.');
+                        }
+                        line.Append(' ');
+                    }
+                    Console.WriteLine(line.ToString());
+                }
+            }
         }
 
         [Test]
@@ -210,6 +242,7 @@ wseweeenwnesenwwwswnew";
                 count = game.Day();
                 Console.WriteLine($"Day {i + 1}: {count}");
             }
+            game.Print();
             Assert.AreEqual(3627, count);
         }
 
