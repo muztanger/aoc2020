@@ -12,7 +12,7 @@ namespace AdventOfCode2020
         internal class Tile : IEquatable<Tile>
         {
             internal Pos pos;
-            internal bool isWhiteUp = true;
+            internal bool isWhite = true;
 
             public override bool Equals(object obj)
             {
@@ -41,7 +41,7 @@ namespace AdventOfCode2020
             }
         }
 
-        private static int Parse(IEnumerable<string> input)
+        private static HashSet<Tile> Parse(IEnumerable<string> input)
         {
             var directions = new Pos[2][];
             directions[0] = new Pos[] { new Pos(1, 0), new Pos(0, 1), new Pos(-1, 1), new Pos(-1, 0), new Pos(-1, -1), new Pos(0, -1) }; // even lines
@@ -67,10 +67,10 @@ namespace AdventOfCode2020
                     var step = directions[Math.Abs(pos.y) % 2][index];
                     pos += step;
                 }
-                var newTile = new Tile() { pos = pos , isWhiteUp = false};
+                var newTile = new Tile() { pos = pos , isWhite = false};
                 if (tiles.TryGetValue(newTile, out var foundTile))
                 {
-                    foundTile.isWhiteUp = !foundTile.isWhiteUp;
+                    foundTile.isWhite = !foundTile.isWhite;
                 }
                 else
                 {
@@ -78,13 +78,10 @@ namespace AdventOfCode2020
                 }
             }
             
-            return tiles.Where(x => x.isWhiteUp == false).Count();
+            return tiles;
         }
 
-        [Test]
-        public void Part1_Example1()
-        {
-            string input = @"sesenwnenenewseeswwswswwnenewsewsw
+     string example = @"sesenwnenenewseeswwswswwnenewsewsw
 neeenesenwnwwswnenewnwwsewnenwseswesw
 seswneswswsenwwnwse
 nwnwneseeswswnenewneswwnewseswneseene
@@ -104,38 +101,116 @@ nenewswnwewswnenesenwnesewesw
 eneswnwswnwsenenwnwnwwseeswneewsenese
 neswnwewnwnwseenwseesewsenwsweewe
 wseweeenwnesenwwwswnew";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(10, parsed);
+
+        [Test]
+        public void Part1_Example1()
+        {
+            var parsed = Parse(Common.GetLines(example));
+            Assert.AreEqual(10, parsed.Where(x => x.isWhite == false).Count());
         }
 
         [Test]
         public void Part1()
         {
             var parsed = Parse(Common.DayInput(nameof(Day24)));
-            Assert.AreEqual(266, parsed);
+            Assert.AreEqual(266, parsed.Where(x => x.isWhite == false).Count());
+        }
+
+        internal class GameOfTiles
+        {
+            internal int DayNum => day;
+            int day = 0;
+            HashSet<Tile> tiles;
+
+            readonly Pos[][] directions = new Pos[2][];
+
+            internal GameOfTiles(HashSet<Tile> tiles)
+            {
+                this.tiles = tiles;
+
+                directions[0] = new Pos[] { new Pos(1, 0), new Pos(0, 1), new Pos(-1, 1), new Pos(-1, 0), new Pos(-1, -1), new Pos(0, -1) }; // even lines
+                directions[1] = new Pos[] { new Pos(1, 0), new Pos(1, 1), new Pos(0, 1), new Pos(-1, 0), new Pos(0, -1), new Pos(1, -1) }; // odd lines
+            }
+
+            internal int Day()
+            {
+                day++;
+
+                var nextDay = new HashSet<Tile>();
+
+                var newTiles = new HashSet<Tile>();
+                foreach (var tile in tiles.Where(x => x.isWhite == false))
+                {
+                    foreach (var dir in directions[Math.Abs(tile.pos.y) % 2])
+                    {
+                        var neighbour = new Tile() { pos = tile.pos + dir };
+                        if (!tiles.Contains(neighbour)) newTiles.Add(neighbour);
+                    }
+                }
+                tiles.UnionWith(newTiles);
+
+                foreach (var tile in tiles)
+                {
+                    int count = 0;
+                    foreach (var dir in directions[Math.Abs(tile.pos.y) % 2])
+                    {
+                        var neighbour = new Tile() { pos = tile.pos + dir };
+                        if (tiles.TryGetValue(neighbour, out var n))
+                        {
+                            if (!n.isWhite) count++;
+                        }
+                    }
+
+                    if (!tile.isWhite)
+                    {
+                        if (count > 0 && count < 3)
+                        {
+                            nextDay.Add(new Tile() { pos = tile.pos, isWhite = false});
+                        }
+                    }
+                    else if (count == 2)
+                    {
+                        nextDay.Add(new Tile() { pos = tile.pos, isWhite = false });
+                    }
+                }
+
+                tiles = nextDay;
+
+                return BlackCount();
+            }
+
+            internal int BlackCount()
+            {
+                return tiles.Where(x => x.isWhite == false).Count();
+            }
         }
 
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            var parsed = Parse(Common.GetLines(example));
+            var game = new GameOfTiles(parsed);
+            int count = 0;
+            for (int i = 0; i < 100; i++)
+            {
+                count = game.Day();
+                Console.WriteLine($"Day {i+1}: {count}");
+            }
+            Assert.AreEqual(2208, count);
         }
 
         [Test]
         public void Part2()
         {
             var parsed = Parse(Common.DayInput(nameof(Day24)));
-            Assert.AreEqual(0, 1);
+            var game = new GameOfTiles(parsed);
+            int count = 0;
+            for (int i = 0; i < 100; i++)
+            {
+                count = game.Day();
+                Console.WriteLine($"Day {i + 1}: {count}");
+            }
+            Assert.AreEqual(3627, count);
         }
 
     }
