@@ -32,7 +32,6 @@ namespace AdventOfCode2020
             var expr = rules[0];
             var regex = GetRegex(expr, rules);
             Console.WriteLine(  regex);
-            Assert.AreEqual(0, 1);
         }
 
         private string GetRegex(string expr, Dictionary<int, string> rules)
@@ -165,50 +164,80 @@ babaaabbbaaabaababbaabababaaab
 aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba";
             var rules = GetRules(Common.GetLines(input));
 
-            //8: 42
+            rules.Remove(8);
+            rules.Remove(11);
+            //0: 8 11
             //8: 42 | 42 8
-            rules[8] = "";
-
-            //11: 42 31
             //11: 42 31 | 42 11 31
-            //31: 14 17 | 1 13
-            ///osv
 
+            //0: (42)+ (42){x} (31){x}
 
-            var expr = rules[0];
-            var regex = GetRegex(expr, rules);
-            regex = "^" + regex + "$";
+            var regex42 = GetRegex(rules[42], rules);
+            //regex42 = $"^({regex42})+";
+            var regex31 = GetRegex(rules[31], rules);
+            //regex31 = $"({regex31})+$";
+            
             var count = 0;
             bool check = false;
             foreach (var line in Common.GetLines(input))
             {
                 if (check)
                 {
-                    if (Regex.IsMatch(line, regex))
+                    if (Regex.IsMatch(line, $"^({regex42})+({regex31})+$"))
                     {
-                        count++;
+                        var last31 = Regex.Match(line, $"({regex31})+$");
+                        var x = Regex.Matches(line[0..last31.Index], regex42).Count;
+                        var y = Regex.Matches(line[last31.Index..], regex31).Count;
+                        if (x > y)
+                        {
+                            count++;
+                        }
                     }
                 }
                 if (!line.Any()) check = true;
             }
-            Console.WriteLine(regex);
-            Assert.AreEqual(2, count);
-            Assert.AreEqual(0, 1);
-        }
-
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = GetRules(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
+            Assert.AreEqual(12, count);
         }
 
         [Test]
         public void Part2()
         {
-            var parsed = GetRules(Common.DayInput(nameof(Day19)));
-            Assert.AreEqual(0, 1);
+            var rules = GetRules(Common.DayInput(nameof(Day19)));
+
+            rules.Remove(8);
+            rules.Remove(11);
+            //0: 8 11
+            //8: 42 | 42 8
+            //11: 42 31 | 42 11 31
+
+            //0: (42)+ (42){x} (31){x}
+
+            var regex42 = GetRegex(rules[42], rules);
+            //regex42 = $"^({regex42})+";
+            var regex31 = GetRegex(rules[31], rules);
+            //regex31 = $"({regex31})+$";
+
+            var count = 0;
+            bool check = false;
+            foreach (var line in Common.DayInput(nameof(Day19)))
+            {
+                if (check)
+                {
+                    if (Regex.IsMatch(line, $"^({regex42})+({regex31})+$"))
+                    {
+                        var last31 = Regex.Match(line, $"({regex31})+$");
+                        var x = Regex.Matches(line[0..last31.Index], regex42).Count;
+                        var y = Regex.Matches(line[last31.Index..], regex31).Count;
+                        if (x > y)
+                        {
+                            count++;
+                        }
+                    }
+                }
+                if (!line.Any()) check = true;
+            }
+            Assert.AreNotEqual(351, count); //too high
+            Assert.AreEqual(323, count);
         }
 
     }
