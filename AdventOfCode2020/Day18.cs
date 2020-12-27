@@ -430,20 +430,54 @@ namespace AdventOfCode2020
             return top;
         }
 
-
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Tokenize(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
-
         [Test]
         public void Part2()
         {
             var parsed = Tokenize(Common.DayInput(nameof(Day18)));
-            Assert.AreEqual(0, 1);
+            long sum = 0;
+            foreach (MatchCollection tokens in parsed)
+            {
+                var groupStack = new Stack<List<Expression>>();
+                var elems = new List<Expression>();
+                foreach (Match m in tokens)
+                {
+                    if (Regex.IsMatch(m.Value, @"\d+"))
+                    {
+                        elems.Add(new Number(long.Parse(m.Value)));
+                    }
+                    else if (m.Value.Equals("+"))
+                    {
+                        elems.Add(new Addition());
+                    }
+                    else if (m.Value.Equals("*"))
+                    {
+                        elems.Add(new Multiplication());
+                    }
+                    else if (m.Value.Equals("("))
+                    {
+                        groupStack.Push(elems);
+                        elems = new List<Expression>();
+                    }
+                    else if (m.Value.Equals(")"))
+                    {
+                        var group = new Group(ParseGroup(elems));
+                        elems = groupStack.Pop();
+                        elems.Add(group);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                elems = ParseAdd(elems);
+                var top = ParseMult(elems);
+                var result = top.Eval();
+                sum += result;
+            }
+
+
+            Assert.AreNotEqual(187, sum); // too low
+            Assert.AreEqual(323912478287549, sum);
         }
 
     }
