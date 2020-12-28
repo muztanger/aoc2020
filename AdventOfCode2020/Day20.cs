@@ -35,6 +35,9 @@ namespace AdventOfCode2020
             public int[] InvertedSides = new int[4];
             public bool[,] Values = new bool[10, 10];
 
+            private DefaultDictionary<Side, int> neighbours = new DefaultDictionary<Side, int>();
+            private DefaultDictionary<Side, int> neighboursInverted = new DefaultDictionary<Side, int>();
+
             public void Init()
             {
                 if (initialized) return;
@@ -166,6 +169,47 @@ namespace AdventOfCode2020
                 }
                 return result.ToString();
             }
+
+            internal bool Neighbour(int k)
+            {
+                var result = false;
+                for (int i = 0; i < Sides.Length; i++)
+                {
+                    if (Sides[i] == k)
+                    {
+                        neighbours[(Side)i]++;
+                        result = true;
+                    }
+                    if (InvertedSides[i] == k)
+                    {
+                        neighboursInverted[(Side)i]++;
+                        result = true;
+                    }
+                }
+                return result;
+            }
+
+            internal bool Neighbour(Tile other)
+            {
+                var result = false;
+                foreach (var k in other.Sides.Concat(other.InvertedSides))
+                {
+                    for (int i = 0; i < Sides.Length; i++)
+                    {
+                        if (Sides[i] == k)
+                        {
+                            neighbours[(Side)i]++;
+                            result = true;
+                        }
+                        if (InvertedSides[i] == k)
+                        {
+                            neighboursInverted[(Side)i]++;
+                            result = true;
+                        }
+                    }
+                }
+                return result;
+            }
         }
 
         private static Dictionary<int, Tile> Parse(IEnumerable<string> input)
@@ -207,10 +251,7 @@ namespace AdventOfCode2020
             return result;
         }
 
-        [Test]
-        public void Part1_Example1()
-        {
-            string input = @"Tile 2311:
+        string example = @"Tile 2311:
 ..##.#..#.
 ##..#.....
 #...##..#.
@@ -317,7 +358,11 @@ Tile 3079:
 ..#.###...
 ..#.......
 ..#.###...";
-            var parsed = Parse(Common.GetLines(input));
+
+        [Test]
+        public void Part1_Example1()
+        {
+            var parsed = Parse(Common.GetLines(example));
 
 
             var nCount = new DefaultDictionary<int, int>();
@@ -352,39 +397,23 @@ Tile 3079:
                 }
             }
             Assert.AreEqual(20899048083289, result);
-        }
-
-        [Test]
-        public void Part1_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
         }
 
         [Test]
         public void Part1()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day20)));
+            var parsed = Parse(Common.DayInput(nameof(Day20))).ToArray();
             var nCount = new DefaultDictionary<int, int>();
-            foreach (var t1 in parsed)
+            for (int i = 0; i < parsed.Length - 1; i++)
             {
-                foreach (var t2 in parsed)
+                var t1 = parsed[i];
+                for (int j = i + 1; j < parsed.Length; j++)
                 {
-                    if (t1.Key == t2.Key) continue;
-                    foreach (var k in t1.Value.Sides)
+                    var t2 = parsed[j];
+                    if (t1.Value.Neighbour(t2.Value))
                     {
-                        if (t2.Value.Sides.Contains(k) || t2.Value.InvertedSides.Contains(k))
-                        {
-                            nCount[t1.Key]++;
-                        }
-                    }
-                    foreach (var k in t1.Value.InvertedSides)
-                    {
-                        if (t2.Value.Sides.Contains(k) || t2.Value.InvertedSides.Contains(k))
-                        {
-                            nCount[t1.Key]++;
-                        }
+                        nCount[t1.Key]++;
+                        nCount[t2.Key]++;
                     }
                 }
             }
@@ -397,22 +426,37 @@ Tile 3079:
                     result *= kv.Key;
                 }
             }
-            Assert.AreEqual(20899048083289, result);
+            Assert.AreEqual(68781323018729, result);
         }
 
         [Test]
         public void Part2_Example1()
         {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
-            Assert.AreEqual(0, 1);
-        }
+            var parsed = Parse(Common.GetLines(example)).ToArray();
+            var nCount = new DefaultDictionary<int, int>();
+            for (int i = 0; i < parsed.Length - 1; i++)
+            {
+                var t1 = parsed[i];
+                for (int j = i + 1; j < parsed.Length; j++)
+                {
+                    var t2 = parsed[j];
+                    if (t1.Value.Neighbour(t2.Value))
+                    {
+                        nCount[t1.Key]++;
+                        nCount[t2.Key]++;
+                    }
+                }
+            }
 
-        [Test]
-        public void Part2_Example2()
-        {
-            string input = @"";
-            var parsed = Parse(Common.GetLines(input));
+            var min = Convert.ToInt64(nCount.Inner.Select(x => x.Value).Min());
+            long result = 1L;
+            foreach (var kv in nCount.Inner)
+            {
+                if (kv.Value == min)
+                {
+                    result *= kv.Key;
+                }
+            }
             Assert.AreEqual(0, 1);
         }
 
