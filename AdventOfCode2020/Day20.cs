@@ -251,6 +251,25 @@ namespace AdventOfCode2020
             return result;
         }
 
+        private static Dictionary<int, int> CountNeighbours(KeyValuePair<int, Tile>[] parsed)
+        {
+            var nCount = new DefaultDictionary<int, int>();
+            for (int i = 0; i < parsed.Length - 1; i++)
+            {
+                var t1 = parsed[i];
+                for (int j = i + 1; j < parsed.Length; j++)
+                {
+                    var t2 = parsed[j];
+                    if (t1.Value.Neighbour(t2.Value))
+                    {
+                        nCount[t1.Key]++;
+                        nCount[t2.Key]++;
+                    }
+                }
+            }
+            return nCount.Inner;
+        }
+
         string example = @"Tile 2311:
 ..##.#..#.
 ##..#.....
@@ -362,34 +381,11 @@ Tile 3079:
         [Test]
         public void Part1_Example1()
         {
-            var parsed = Parse(Common.GetLines(example));
-
-
-            var nCount = new DefaultDictionary<int, int>();
-            foreach (var t1 in parsed)
-            {
-                foreach (var t2 in parsed)
-                {
-                    if (t1.Key == t2.Key) continue;
-                    foreach (var k in t1.Value.Sides)
-                    {
-                        if (t2.Value.Sides.Contains(k) || t2.Value.InvertedSides.Contains(k))
-                        {
-                            nCount[t1.Key]++;
-                        }
-                    }
-                    foreach (var k in t1.Value.InvertedSides)
-                    {
-                        if (t2.Value.Sides.Contains(k) || t2.Value.InvertedSides.Contains(k))
-                        {
-                            nCount[t1.Key]++;
-                        }
-                    }
-                }
-            }
-            var min = Convert.ToInt64(nCount.Inner.Select(x => x.Value).Min());
+            var tiles = Parse(Common.GetLines(example)).ToArray();
+            Dictionary<int, int> nCount = CountNeighbours(tiles);
+            var min = Convert.ToInt64(nCount.Select(x => x.Value).Min());
             long result = 1L;
-            foreach (var kv in nCount.Inner)
+            foreach (var kv in nCount)
             {
                 if (kv.Value == min)
                 {
@@ -402,24 +398,11 @@ Tile 3079:
         [Test]
         public void Part1()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day20))).ToArray();
-            var nCount = new DefaultDictionary<int, int>();
-            for (int i = 0; i < parsed.Length - 1; i++)
-            {
-                var t1 = parsed[i];
-                for (int j = i + 1; j < parsed.Length; j++)
-                {
-                    var t2 = parsed[j];
-                    if (t1.Value.Neighbour(t2.Value))
-                    {
-                        nCount[t1.Key]++;
-                        nCount[t2.Key]++;
-                    }
-                }
-            }
-            var min = Convert.ToInt64(nCount.Inner.Select(x => x.Value).Min());
+            var tiles = Parse(Common.DayInput(nameof(Day20))).ToArray();
+            Dictionary<int, int> nCount = CountNeighbours(tiles);
+            var min = Convert.ToInt64(nCount.Select(x => x.Value).Min());
             long result = 1L;
-            foreach (var kv in nCount.Inner)
+            foreach (var kv in nCount)
             {
                 if (kv.Value == min)
                 {
@@ -432,25 +415,13 @@ Tile 3079:
         [Test]
         public void Part2_Example1()
         {
-            var parsed = Parse(Common.GetLines(example)).ToArray();
-            var nCount = new DefaultDictionary<int, int>();
-            for (int i = 0; i < parsed.Length - 1; i++)
-            {
-                var t1 = parsed[i];
-                for (int j = i + 1; j < parsed.Length; j++)
-                {
-                    var t2 = parsed[j];
-                    if (t1.Value.Neighbour(t2.Value))
-                    {
-                        nCount[t1.Key]++;
-                        nCount[t2.Key]++;
-                    }
-                }
-            }
+            var tiles = Parse(Common.GetLines(example)).ToArray();
+            Dictionary<int, int> nCount = CountNeighbours(tiles);
 
-            var min = Convert.ToInt64(nCount.Inner.Select(x => x.Value).Min());
+
+            var min = Convert.ToInt64(nCount.Select(x => x.Value).Min());
             long result = 1L;
-            foreach (var kv in nCount.Inner)
+            foreach (var kv in nCount)
             {
                 if (kv.Value == min)
                 {
