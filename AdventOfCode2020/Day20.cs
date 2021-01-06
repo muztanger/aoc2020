@@ -11,7 +11,7 @@ namespace AdventOfCode2020
     {
         public enum Side { Top, Right, Bottom, Left}
 
-        public class Tile
+        public class Tile : IEquatable<Tile>
         {
 
             private static List<Side[]> Transforms = new List<Side[]>()
@@ -35,8 +35,19 @@ namespace AdventOfCode2020
             public int[] InvertedSides = new int[4];
             public bool[,] Values = new bool[10, 10];
 
-            private DefaultDictionary<Side, int> neighbours = new DefaultDictionary<Side, int>();
-            private DefaultDictionary<Side, int> neighboursInverted = new DefaultDictionary<Side, int>();
+            private DefaultDictionary<Side, int> neighbourCount = new DefaultDictionary<Side, int>();
+            private DefaultDictionary<Side, int> neighboursInvertedCount = new DefaultDictionary<Side, int>();
+            public DefaultValueDictionary<Side, HashSet<Tile>> neighbourTiles = new DefaultValueDictionary<Side, HashSet<Tile>>(() => new HashSet<Tile>());
+            private readonly int identifier;
+
+            public int Identifier => identifier;
+
+            public IEnumerator<KeyValuePair<Side, HashSet<Tile>>> Neighbours { get => neighbourTiles.GetEnumerator(); }
+
+            public Tile(int identifier)
+            {
+                this.identifier = identifier;
+            }
 
             public void Init()
             {
@@ -46,7 +57,7 @@ namespace AdventOfCode2020
                 // top
                 {
                     int x = 0;
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < Values.GetLength(0); i++)
                     {
                         x <<= 1;
                         if (Values[i, 0])
@@ -60,7 +71,7 @@ namespace AdventOfCode2020
                 // inverted top
                 {
                     int x = 0;
-                    for (int i = 9; i >= 0; i--)
+                    for (int i = Values.GetLength(0) - 1; i >= 0; i--)
                     {
                         x <<= 1;
                         if (Values[i, 0])
@@ -74,10 +85,10 @@ namespace AdventOfCode2020
                 // right
                 {
                     int x = 0;
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < Values.GetLength(0); i++)
                     {
                         x <<= 1;
-                        if (Values[9, i])
+                        if (Values[Values.GetLength(0) - 1, i])
                         {
                             x |= 0x1;
                         }
@@ -88,10 +99,10 @@ namespace AdventOfCode2020
                 // inverted right
                 {
                     int x = 0;
-                    for (int i = 9; i >= 0; i--)
+                    for (int i = Values.GetLength(0) - 1; i >= 0; i--)
                     {
                         x <<= 1;
-                        if (Values[9, i])
+                        if (Values[Values.GetLength(0) - 1, i])
                         {
                             x |= 0x1;
                         }
@@ -102,10 +113,10 @@ namespace AdventOfCode2020
                 // bottom
                 {
                     int x = 0;
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < Values.GetLength(0); i++)
                     {
                         x <<= 1;
-                        if (Values[i, 9])
+                        if (Values[i, Values.GetLength(0) - 1])
                         {
                             x |= 0x1;
                         }
@@ -116,10 +127,10 @@ namespace AdventOfCode2020
                 // inverted bottom
                 {
                     int x = 0;
-                    for (int i = 9; i >= 0; i--)
+                    for (int i = Values.GetLength(0) - 1; i >= 0; i--)
                     {
                         x <<= 1;
-                        if (Values[i, 9])
+                        if (Values[i, Values.GetLength(0) - 1])
                         {
                             x |= 0x1;
                         }
@@ -130,7 +141,7 @@ namespace AdventOfCode2020
                 // left
                 {
                     int x = 0;
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < Values.GetLength(0); i++)
                     {
                         x <<= 1;
                         if (Values[0, i])
@@ -144,7 +155,7 @@ namespace AdventOfCode2020
                 // inverted left
                 {
                     int x = 0;
-                    for (int i = 9; i >= 0; i--)
+                    for (int i = Values.GetLength(0) - 1; i >= 0; i--)
                     {
                         x <<= 1;
                         if (Values[0, i])
@@ -159,34 +170,15 @@ namespace AdventOfCode2020
             public override string ToString()
             {
                 var result = new StringBuilder();
-                for (int j = 0; j < 10; j++)
+                for (int j = 0; j < Values.GetLength(1); j++)
                 {
                     if (j != 0) result.Append("\n");
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < Values.GetLength(0); i++)
                     {
                         result.Append(Values[i, j] ? '#' : '.');
                     }
                 }
                 return result.ToString();
-            }
-
-            internal bool Neighbour(int k)
-            {
-                var result = false;
-                for (int i = 0; i < Sides.Length; i++)
-                {
-                    if (Sides[i] == k)
-                    {
-                        neighbours[(Side)i]++;
-                        result = true;
-                    }
-                    if (InvertedSides[i] == k)
-                    {
-                        neighboursInverted[(Side)i]++;
-                        result = true;
-                    }
-                }
-                return result;
             }
 
             internal bool Neighbour(Tile other)
@@ -198,17 +190,53 @@ namespace AdventOfCode2020
                     {
                         if (Sides[i] == k)
                         {
-                            neighbours[(Side)i]++;
+                            neighbourTiles[(Side)i].Add(other);
+                            neighbourCount[(Side)i]++;
                             result = true;
                         }
                         if (InvertedSides[i] == k)
                         {
-                            neighboursInverted[(Side)i]++;
+                            neighbourTiles[(Side)i].Add(other);
+                            neighboursInvertedCount[(Side)i]++;
                             result = true;
                         }
                     }
                 }
                 return result;
+            }
+
+            public void PrintNeighbours()
+            {
+                foreach (var kv in neighbourTiles)
+                {
+                    Console.WriteLine($"{kv.Key}: {string.Join(",", kv.Value.Select(x => x.Identifier))}");
+                }
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as Tile);
+            }
+
+            public bool Equals(Tile other)
+            {
+                return other != null &&
+                       identifier == other.identifier;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(identifier);
+            }
+
+            public static bool operator ==(Tile left, Tile right)
+            {
+                return EqualityComparer<Tile>.Default.Equals(left, right);
+            }
+
+            public static bool operator !=(Tile left, Tile right)
+            {
+                return !(left == right);
             }
         }
 
@@ -230,7 +258,7 @@ namespace AdventOfCode2020
                         j = 0;
                     }
                     key = int.Parse(Regex.Match(line, @"\d+").Value);
-                    tile = new Tile();
+                    tile = new Tile(key ?? throw new NullReferenceException(nameof(key)));
                 }
                 else if (line.Any())
                 {
@@ -260,7 +288,7 @@ namespace AdventOfCode2020
                 for (int j = i + 1; j < parsed.Length; j++)
                 {
                     var t2 = parsed[j];
-                    if (t1.Value.Neighbour(t2.Value))
+                    if (t1.Value.Neighbour(t2.Value) && t2.Value.Neighbour(t1.Value))
                     {
                         nCount[t1.Key]++;
                         nCount[t2.Key]++;
@@ -415,20 +443,60 @@ Tile 3079:
         [Test]
         public void Part2_Example1()
         {
-            var tiles = Parse(Common.GetLines(example)).ToArray();
-            Dictionary<int, int> nCount = CountNeighbours(tiles);
+            var tiles = Parse(Common.GetLines(example));
+            Dictionary<int, int> nCount = CountNeighbours(tiles.ToArray());
 
+            var firstCorner = tiles[nCount.Where(k => k.Value == nCount.Select(x => x.Value).Min()).First().Key];
 
-            var min = Convert.ToInt64(nCount.Select(x => x.Value).Min());
-            long result = 1L;
-            foreach (var kv in nCount)
+            var tilePos = new Dictionary<Pos, Tile>();
             {
-                if (kv.Value == min)
+                var pos = new Pos(0, 0);
+                tilePos[new Pos(pos)] = firstCorner;
+                findNeighbours(firstCorner, ref tilePos, pos);
+            }
+            
+            var min = new Pos(int.MaxValue, int.MaxValue);
+            var max = new Pos(int.MinValue, int.MinValue);
+            foreach (var pos in tilePos.Keys)
+            {
+                min.x = Math.Min(pos.x, min.x);
+                min.y = Math.Min(pos.y, min.y);
+                max.x = Math.Max(pos.x, max.x);
+                max.y = Math.Max(pos.y, max.y);
+            }
+
+            for (int j = max.y; j >= min.y; j--)
+            {
+                for (int i = min.x; i <= max.x; i++)
                 {
-                    result *= kv.Key;
+                    var pos = new Pos(i, j);
+                    Console.WriteLine(tilePos[pos]);
                 }
             }
-            Assert.AreEqual(0, 1);
+        }
+
+
+        Dictionary<Side, Pos> sideDiff = new Dictionary<Side, Pos>()
+        { 
+            { Side.Top, new Pos(0, 1) },
+            { Side.Right, new Pos(1, 0) },
+            { Side.Bottom, new Pos(0, -1) },
+            { Side.Left, new Pos(-1, 0) },
+        };
+        private void findNeighbours(Tile tile, ref Dictionary<Pos, Tile> tilePos, Pos pos)
+        {
+            foreach (var sideTile in tile.neighbourTiles)
+            {
+                var count = sideTile.Value.Count;
+                Assert.IsTrue(count >= 0 && count <= 1);
+                var neighbourPos = pos + sideDiff[sideTile.Key];
+                var neighbour = sideTile.Value.First();
+                if (count == 1 && !tilePos.ContainsValue(neighbour))
+                {
+                    tilePos[neighbourPos] = neighbour;
+                    findNeighbours(neighbour, ref tilePos, neighbourPos);
+                }
+            }
         }
 
         [Test]
