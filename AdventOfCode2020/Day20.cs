@@ -20,7 +20,6 @@ namespace AdventOfCode2020
                 {new Side[4]{Side.Top, Side.Right, Side.Bottom, Side.Left }},
 
                 // rotations
-                {new Side[4]{Side.Top, Side.Right, Side.Bottom, Side.Left }},
                 {new Side[4]{Side.Right, Side.Bottom, Side.Left, Side.Top }},
                 {new Side[4]{Side.Bottom, Side.Left, Side.Top, Side.Right }},
                 {new Side[4]{Side.Left, Side.Top, Side.Right, Side.Bottom }},
@@ -30,19 +29,18 @@ namespace AdventOfCode2020
                 {new Side[4]{Side.Top, Side.Left, Side.Bottom, Side.Right }},
             };
 
-            private bool initialized = false;
             public int[] Sides = new int[4];
             public int[] InvertedSides = new int[4];
             public bool[,] Values = new bool[10, 10];
 
             private DefaultDictionary<Side, int> neighbourCount = new DefaultDictionary<Side, int>();
             private DefaultDictionary<Side, int> neighboursInvertedCount = new DefaultDictionary<Side, int>();
-            public DefaultValueDictionary<Side, HashSet<Tile>> neighbourTiles = new DefaultValueDictionary<Side, HashSet<Tile>>(() => new HashSet<Tile>());
+            public DefaultValueDictionary<Side, Tile> neighbourTiles = new DefaultValueDictionary<Side, Tile>(() => null);
             private readonly int identifier;
 
             public int Identifier => identifier;
 
-            public IEnumerator<KeyValuePair<Side, HashSet<Tile>>> Neighbours { get => neighbourTiles.GetEnumerator(); }
+            public IEnumerator<KeyValuePair<Side, Tile>> Neighbours { get => neighbourTiles.GetEnumerator(); }
 
             public Tile(int identifier)
             {
@@ -51,9 +49,6 @@ namespace AdventOfCode2020
 
             public void Init()
             {
-                if (initialized) return;
-                initialized = true;
-
                 // top
                 {
                     int x = 0;
@@ -167,9 +162,78 @@ namespace AdventOfCode2020
                 }
             }
 
+            public void VerticalFlip()
+            {
+                bool[,] result = new bool[Values.GetLength(0), Values.GetLength(1)];
+                for (int j = 0; j < Values.GetLength(1); j++)
+                {
+                    for (int i = 0; i < Values.GetLength(0); i++)
+                    {
+                        int x = i;
+                        int y = Values.GetLength(1) - 1 - j;
+                        result[x, y] = Values[i, j];
+                    }
+                }
+                Values = result;
+
+                var tmp = neighbourTiles[Side.Top];
+                neighbourTiles[Side.Top] = neighbourTiles[Side.Bottom];
+                neighbourTiles[Side.Bottom] = tmp;
+                
+                Init();
+            }
+
+            public void HorizontalFlip()
+            {
+                bool[,] result = new bool[Values.GetLength(0), Values.GetLength(1)];
+                for (int j = 0; j < Values.GetLength(1); j++)
+                {
+                    for (int i = 0; i < Values.GetLength(0); i++)
+                    {
+                        int x = Values.GetLength(0) - 1 - i;
+                        int y = j;
+                        result[x, y] = Values[i, j];
+                    }
+                }
+                Values = result;
+
+                var tmp = neighbourTiles[Side.Right];
+                neighbourTiles[Side.Right] = neighbourTiles[Side.Left];
+                neighbourTiles[Side.Left] = tmp;
+
+                Init();
+            }
+
+            public void Rotate90()
+            {
+                Assert.AreEqual(Values.GetLength(0), Values.GetLength(1));
+                bool[,] result = new bool[Values.GetLength(0), Values.GetLength(1)];
+                for (int j = 0; j < Values.GetLength(1); j++)
+                {
+                    for (int i = 0; i < Values.GetLength(0); i++)
+                    {
+                        int x = Values.GetLength(0) - 1 - j;
+                        int y = i;
+                        result[x, y] = Values[i, j];
+                    }
+                }
+
+                Values = result;
+
+                var tmp = neighbourTiles[Side.Right];
+                neighbourTiles[Side.Right] = neighbourTiles[Side.Top];
+                neighbourTiles[Side.Top] = neighbourTiles[Side.Left];
+                neighbourTiles[Side.Left] = neighbourTiles[Side.Bottom];
+                neighbourTiles[Side.Bottom] = tmp;
+
+                Init();
+            }
+
             public override string ToString()
             {
                 var result = new StringBuilder();
+                result.Append(identifier);
+                result.Append('\n');
                 for (int j = 0; j < Values.GetLength(1); j++)
                 {
                     if (j != 0) result.Append("\n");
@@ -190,13 +254,13 @@ namespace AdventOfCode2020
                     {
                         if (Sides[i] == k)
                         {
-                            neighbourTiles[(Side)i].Add(other);
+                            neighbourTiles[(Side)i] = other;
                             neighbourCount[(Side)i]++;
                             result = true;
                         }
                         if (InvertedSides[i] == k)
                         {
-                            neighbourTiles[(Side)i].Add(other);
+                            neighbourTiles[(Side)i] = other;
                             neighboursInvertedCount[(Side)i]++;
                             result = true;
                         }
@@ -209,7 +273,7 @@ namespace AdventOfCode2020
             {
                 foreach (var kv in neighbourTiles)
                 {
-                    Console.WriteLine($"{kv.Key}: {string.Join(",", kv.Value.Select(x => x.Identifier))}");
+                    Console.WriteLine($"{kv.Key}: {string.Join(",", kv.Value.Identifier)}");
                 }
             }
 
@@ -454,7 +518,7 @@ Tile 3079:
                 tilePos[new Pos(pos)] = firstCorner;
                 findNeighbours(firstCorner, ref tilePos, pos);
             }
-            
+
             var min = new Pos(int.MaxValue, int.MaxValue);
             var max = new Pos(int.MinValue, int.MinValue);
             foreach (var pos in tilePos.Keys)
@@ -465,33 +529,67 @@ Tile 3079:
                 max.y = Math.Max(pos.y, max.y);
             }
 
-            for (int j = max.y; j >= min.y; j--)
+            char[,] sea;
+            {
+                var diff = max - min;
+                sea = new char[(diff.x + 1) * (firstCorner.Values.GetLength(0) + 1), (diff.y + 1) * (firstCorner.Values.GetLength(1) + 1)];
+                for (int j = 0; j < sea.GetLength(0); j++)
+                    for (int i = 0; i < sea.GetLength(1); i++)
+                        sea[i, j] = ' ';
+            }
+
+            for (int j = min.y; j <= max.y; j++)
             {
                 for (int i = min.x; i <= max.x; i++)
                 {
                     var pos = new Pos(i, j);
-                    Console.WriteLine(tilePos[pos]);
+                    var diff = pos - min;
+                    if (tilePos.TryGetValue(pos, out Tile tile))
+                    {
+                        var tileX = diff.x * (tile.Values.GetLength(0) + 1);
+                        var tileY = diff.y * (tile.Values.GetLength(1) + 1);
+                        for (int y = 0; y < tile.Values.GetLength(1); y++)
+                        {
+                            for (int x = 0; x < tile.Values.GetLength(0); x++)
+                            {
+                                sea[tileX + x, tileY + y] = tile.Values[x, y] ? '#' : '.';
+                            }
+                        }
+                        //Console.WriteLine(tile);
+                    }
                 }
             }
+
+            var seaText = new StringBuilder();
+            for (int j = 0; j < sea.GetLength(1); j++)
+            {
+                if (j != 0)
+                {
+                    seaText.Append("\n");
+                }
+                for (int i = 0; i < sea.GetLength(0); i++)
+                {
+                    seaText.Append(sea[i, j]);
+                }
+            }
+            Console.WriteLine(seaText);
         }
 
 
         Dictionary<Side, Pos> sideDiff = new Dictionary<Side, Pos>()
         { 
-            { Side.Top, new Pos(0, 1) },
+            { Side.Top, new Pos(0, -1) },
             { Side.Right, new Pos(1, 0) },
-            { Side.Bottom, new Pos(0, -1) },
+            { Side.Bottom, new Pos(0, 1) },
             { Side.Left, new Pos(-1, 0) },
         };
         private void findNeighbours(Tile tile, ref Dictionary<Pos, Tile> tilePos, Pos pos)
         {
             foreach (var sideTile in tile.neighbourTiles)
             {
-                var count = sideTile.Value.Count;
-                Assert.IsTrue(count >= 0 && count <= 1);
                 var neighbourPos = pos + sideDiff[sideTile.Key];
-                var neighbour = sideTile.Value.First();
-                if (count == 1 && !tilePos.ContainsValue(neighbour))
+                var neighbour = sideTile.Value;
+                if (neighbour != null && !tilePos.ContainsValue(neighbour))
                 {
                     tilePos[neighbourPos] = neighbour;
                     findNeighbours(neighbour, ref tilePos, neighbourPos);
