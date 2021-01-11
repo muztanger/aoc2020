@@ -9,7 +9,7 @@ namespace AdventOfCode2020
 {
     public class Day20
     {
-        public enum Side { Top, Right, Bottom, Left}
+        public enum Side { Up, Right, Down, Left}
 
         public class Tile : IEquatable<Tile>
         {
@@ -17,16 +17,16 @@ namespace AdventOfCode2020
             private static List<Side[]> Transforms = new List<Side[]>()
             {
                 // unit
-                {new Side[4]{Side.Top, Side.Right, Side.Bottom, Side.Left }},
+                {new Side[4]{Side.Up, Side.Right, Side.Down, Side.Left }},
 
                 // rotations
-                {new Side[4]{Side.Right, Side.Bottom, Side.Left, Side.Top }},
-                {new Side[4]{Side.Bottom, Side.Left, Side.Top, Side.Right }},
-                {new Side[4]{Side.Left, Side.Top, Side.Right, Side.Bottom }},
+                {new Side[4]{Side.Right, Side.Down, Side.Left, Side.Up }},
+                {new Side[4]{Side.Down, Side.Left, Side.Up, Side.Right }},
+                {new Side[4]{Side.Left, Side.Up, Side.Right, Side.Down }},
 
                 // flips
-                {new Side[4]{Side.Bottom, Side.Right, Side.Top, Side.Left }},
-                {new Side[4]{Side.Top, Side.Left, Side.Bottom, Side.Right }},
+                {new Side[4]{Side.Down, Side.Right, Side.Up, Side.Left }},
+                {new Side[4]{Side.Up, Side.Left, Side.Down, Side.Right }},
             };
 
             public int[] Sides = new int[4];
@@ -35,12 +35,10 @@ namespace AdventOfCode2020
 
             private DefaultDictionary<Side, int> neighbourCount = new DefaultDictionary<Side, int>();
             private DefaultDictionary<Side, int> neighboursInvertedCount = new DefaultDictionary<Side, int>();
-            public DefaultValueDictionary<Side, Tile> neighbourTiles = new DefaultValueDictionary<Side, Tile>(() => null);
+            public DefaultValueDictionary<Side, Tile> Neighbours = new DefaultValueDictionary<Side, Tile>(() => null);
             private readonly int identifier;
 
             public int Identifier => identifier;
-
-            public IEnumerator<KeyValuePair<Side, Tile>> Neighbours { get => neighbourTiles.GetEnumerator(); }
 
             public Tile(int identifier)
             {
@@ -60,7 +58,7 @@ namespace AdventOfCode2020
                             x |= 0x1;
                         }
                     }
-                    Sides[(int) Side.Top] = x;        
+                    Sides[(int) Side.Up] = x;        
                 }
 
                 // inverted top
@@ -74,7 +72,7 @@ namespace AdventOfCode2020
                             x |= 0x1;
                         }
                     }
-                    InvertedSides[(int)Side.Top] = x;
+                    InvertedSides[(int)Side.Up] = x;
                 }
 
                 // right
@@ -116,7 +114,7 @@ namespace AdventOfCode2020
                             x |= 0x1;
                         }
                     }
-                    Sides[(int)Side.Bottom] = x;
+                    Sides[(int)Side.Down] = x;
                 }
 
                 // inverted bottom
@@ -130,7 +128,7 @@ namespace AdventOfCode2020
                             x |= 0x1;
                         }
                     }
-                    InvertedSides[(int)Side.Bottom] = x;
+                    InvertedSides[(int)Side.Down] = x;
                 }
 
                 // left
@@ -176,9 +174,9 @@ namespace AdventOfCode2020
                 }
                 Values = result;
 
-                var tmp = neighbourTiles[Side.Top];
-                neighbourTiles[Side.Top] = neighbourTiles[Side.Bottom];
-                neighbourTiles[Side.Bottom] = tmp;
+                var tmp = Neighbours[Side.Up];
+                Neighbours[Side.Up] = Neighbours[Side.Down];
+                Neighbours[Side.Down] = tmp;
                 
                 Init();
             }
@@ -197,9 +195,9 @@ namespace AdventOfCode2020
                 }
                 Values = result;
 
-                var tmp = neighbourTiles[Side.Right];
-                neighbourTiles[Side.Right] = neighbourTiles[Side.Left];
-                neighbourTiles[Side.Left] = tmp;
+                var tmp = Neighbours[Side.Right];
+                Neighbours[Side.Right] = Neighbours[Side.Left];
+                Neighbours[Side.Left] = tmp;
 
                 Init();
             }
@@ -220,11 +218,11 @@ namespace AdventOfCode2020
 
                 Values = result;
 
-                var tmp = neighbourTiles[Side.Right];
-                neighbourTiles[Side.Right] = neighbourTiles[Side.Top];
-                neighbourTiles[Side.Top] = neighbourTiles[Side.Left];
-                neighbourTiles[Side.Left] = neighbourTiles[Side.Bottom];
-                neighbourTiles[Side.Bottom] = tmp;
+                var tmp = Neighbours[Side.Right];
+                Neighbours[Side.Right] = Neighbours[Side.Up];
+                Neighbours[Side.Up] = Neighbours[Side.Left];
+                Neighbours[Side.Left] = Neighbours[Side.Down];
+                Neighbours[Side.Down] = tmp;
 
                 Init();
             }
@@ -254,13 +252,13 @@ namespace AdventOfCode2020
                     {
                         if (Sides[i] == k)
                         {
-                            neighbourTiles[(Side)i] = other;
+                            Neighbours[(Side)i] = other;
                             neighbourCount[(Side)i]++;
                             result = true;
                         }
                         if (InvertedSides[i] == k)
                         {
-                            neighbourTiles[(Side)i] = other;
+                            Neighbours[(Side)i] = other;
                             neighboursInvertedCount[(Side)i]++;
                             result = true;
                         }
@@ -271,7 +269,7 @@ namespace AdventOfCode2020
 
             public void PrintNeighbours()
             {
-                foreach (var kv in neighbourTiles)
+                foreach (var kv in Neighbours)
                 {
                     Console.WriteLine($"{kv.Key}: {string.Join(",", kv.Value.Identifier)}");
                 }
@@ -301,6 +299,16 @@ namespace AdventOfCode2020
             public static bool operator !=(Tile left, Tile right)
             {
                 return !(left == right);
+            }
+
+            internal bool IsUp(Tile up)
+            {
+                return up.Sides[(int)Side.Down] == Sides[(int)Side.Up];
+            }
+
+            internal bool IsLeft(Tile left)
+            {
+                return left.Sides[(int) Side.Right] == Sides[(int) Side.Left];
             }
         }
 
@@ -510,7 +518,19 @@ Tile 3079:
             var tiles = Parse(Common.GetLines(example));
             Dictionary<int, int> nCount = CountNeighbours(tiles.ToArray());
 
-            var firstCorner = tiles[nCount.Where(k => k.Value == nCount.Select(x => x.Value).Min()).First().Key];
+            var cornerIds = nCount.Where(k => k.Value == nCount.Select(x => x.Value).Min()).Select(kv => kv.Key);
+            Tile firstCorner = null;
+            foreach (var cornerId in cornerIds)
+            {
+                var tile = tiles[cornerId];
+                var neighbours = tile.Neighbours.Inner;
+                if (neighbours.ContainsKey(Side.Right) && neighbours.ContainsKey(Side.Down))
+                {
+                    firstCorner = tile;
+                    break;
+                }
+            }
+            Assert.NotNull(firstCorner);
 
             var tilePos = new Dictionary<Pos, Tile>();
             {
@@ -578,22 +598,78 @@ Tile 3079:
 
         Dictionary<Side, Pos> sideDiff = new Dictionary<Side, Pos>()
         { 
-            { Side.Top, new Pos(0, -1) },
+            { Side.Up, new Pos(0, -1) },
             { Side.Right, new Pos(1, 0) },
-            { Side.Bottom, new Pos(0, 1) },
+            { Side.Down, new Pos(0, 1) },
             { Side.Left, new Pos(-1, 0) },
         };
         private void findNeighbours(Tile tile, ref Dictionary<Pos, Tile> tilePos, Pos pos)
         {
-            foreach (var sideTile in tile.neighbourTiles)
+            tilePos.TryGetValue(pos + sideDiff[Side.Up], out var up);
+            tilePos.TryGetValue(pos + sideDiff[Side.Left], out var left);
+
+            int count = up != null ? 1 : 0;
+            count += left != null ? 1 : 0;
+
+            bool IsMatch()
             {
-                var neighbourPos = pos + sideDiff[sideTile.Key];
-                var neighbour = sideTile.Value;
-                if (neighbour != null && !tilePos.ContainsValue(neighbour))
+                bool match = left == null || tile.IsLeft(left);
+                match &= up == null || tile.IsUp(up);
+                return match;
+            }
+            
+            while (!IsMatch())
+            {
+                for (int i = 0; i < 4; i++)
                 {
-                    tilePos[neighbourPos] = neighbour;
-                    findNeighbours(neighbour, ref tilePos, neighbourPos);
+
+                    tile.Rotate90();
+                    if (IsMatch())
+                    {
+                        break;
+                    }
                 }
+                tile.HorizontalFlip();
+                if (IsMatch())
+                {
+                    break;
+                }
+                for (int i = 0; i < 4; i++)
+                {
+
+                    tile.Rotate90();
+                    if (IsMatch())
+                    {
+                        break;
+                    }
+                }
+                tile.HorizontalFlip(); // flip back
+                tile.VerticalFlip();
+                if (IsMatch())
+                {
+                    break;
+                }
+                for (int i = 0; i < 4; i++)
+                {
+
+                    tile.Rotate90();
+                    if (IsMatch())
+                    {
+                        break;
+                    }
+                }
+            }
+            if (tile.Neighbours.Inner.TryGetValue(Side.Right, out Tile right) && right != null)
+            {
+                var rightPos = pos + sideDiff[Side.Right];
+                tilePos[rightPos] = right;
+                findNeighbours(right, ref tilePos, rightPos);
+            }
+            if (tile.Neighbours.Inner.TryGetValue(Side.Down, out Tile down) && down != null)
+            {
+                var downPos = pos + sideDiff[Side.Down];
+                tilePos[downPos] = down;
+                findNeighbours(down, ref tilePos, downPos);
             }
         }
 

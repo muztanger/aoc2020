@@ -19,6 +19,8 @@ namespace AdventOfCode2020
             mDefaultValueFactory = defaultValueFactory;
         }
 
+        public Dictionary<TKey, TValue> Inner => mDict;
+
         public TValue this[TKey key] 
         { 
             get => GetValue(key);
@@ -50,5 +52,7 @@ namespace AdventOfCode2020
         {
             return mDict.GetEnumerator();
         }
+
+
     }
 }
