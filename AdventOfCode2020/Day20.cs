@@ -516,6 +516,13 @@ Tile 3079:
         public void Part2_Example1()
         {
             var tiles = Parse(Common.GetLines(example));
+            int result = Part2Run(tiles);
+
+            Assert.AreEqual(273, result);
+        }
+
+        private int Part2Run(Dictionary<int, Tile> tiles)
+        {
             Dictionary<int, int> nCount = CountNeighbours(tiles.ToArray());
 
             var cornerIds = nCount.Where(k => k.Value == nCount.Select(x => x.Value).Min()).Select(kv => kv.Key);
@@ -586,7 +593,7 @@ Tile 3079:
             };
 
             var monsters = new List<Pos>();
-            
+
             bool TryRotations()
             {
                 for (int i = 0; i < 4; i++)
@@ -637,7 +644,7 @@ Tile 3079:
                     result++;
             }
 
-            Assert.AreEqual(273, result);
+            return result;
         }
 
         private static void PrintSea(char[,] sea)
@@ -802,8 +809,10 @@ Tile 3079:
         [Test]
         public void Part2()
         {
-            var parsed = Parse(Common.DayInput(nameof(Day20)));
-            Assert.AreEqual(0, 1);
+            var tiles = Parse(Common.DayInput(nameof(Day20)));
+            int result = Part2Run(tiles);
+
+            Assert.AreEqual(1629, result);
         }
 
     }
