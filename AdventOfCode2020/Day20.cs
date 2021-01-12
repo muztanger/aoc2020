@@ -552,7 +552,7 @@ Tile 3079:
             char[,] sea;
             {
                 var diff = max - min;
-                sea = new char[(diff.x + 1) * (firstCorner.Values.GetLength(0) + 1), (diff.y + 1) * (firstCorner.Values.GetLength(1) + 1)];
+                sea = new char[(diff.x + 1) * (firstCorner.Values.GetLength(0) - 2), (diff.y + 1) * (firstCorner.Values.GetLength(1) - 2)];
                 for (int j = 0; j < sea.GetLength(0); j++)
                     for (int i = 0; i < sea.GetLength(1); i++)
                         sea[i, j] = ' ';
@@ -566,20 +566,57 @@ Tile 3079:
                     var diff = pos - min;
                     if (tilePos.TryGetValue(pos, out Tile tile))
                     {
-                        var tileX = diff.x * (tile.Values.GetLength(0) + 1);
-                        var tileY = diff.y * (tile.Values.GetLength(1) + 1);
-                        for (int y = 0; y < tile.Values.GetLength(1); y++)
+                        var tileX = diff.x * (tile.Values.GetLength(0) - 2);
+                        var tileY = diff.y * (tile.Values.GetLength(1) - 2);
+                        for (int y = 1; y < tile.Values.GetLength(1) - 1; y++)
                         {
-                            for (int x = 0; x < tile.Values.GetLength(0); x++)
+                            for (int x = 1; x < tile.Values.GetLength(0) - 1; x++)
                             {
-                                sea[tileX + x, tileY + y] = tile.Values[x, y] ? '#' : '.';
+                                sea[tileX + x - 1, tileY + y - 1] = tile.Values[x, y] ? '#' : '.';
                             }
                         }
-                        //Console.WriteLine(tile);
                     }
                 }
             }
 
+            var monster = new char[,] {
+                {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' '},
+                {'#', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', '#', '#', '#'},
+                {' ', '#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', ' '},
+            };
+
+            var monsters = new List<Pos>();
+            
+            bool TryRotations()
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    monsters = FindMonsters(sea, monster);
+                    if (monsters.Count > 0)
+                        return true;
+                    sea = Rotate90(sea);
+                }
+                return false;
+            }
+
+            if (!TryRotations())
+            {
+                sea = HorisontalFlip(sea);
+            }
+            if (monsters.Count == 0 && !TryRotations())
+            {
+                sea = HorisontalFlip(sea); // flip back
+                sea = VerticalFlip(sea);
+                TryRotations();
+            }
+
+            Console.WriteLine($"monsterCount={monsters.Count}");
+
+            PrintSea(sea);
+        }
+
+        private static void PrintSea(char[,] sea)
+        {
             var seaText = new StringBuilder();
             for (int j = 0; j < sea.GetLength(1); j++)
             {
@@ -595,6 +632,87 @@ Tile 3079:
             Console.WriteLine(seaText);
         }
 
+        private static char[,] Rotate90(char[,] sea)
+        {
+            Assert.AreEqual(sea.GetLength(0), sea.GetLength(1));
+
+            var result = new char[sea.GetLength(0), sea.GetLength(1)];
+            for (int j = 0; j < sea.GetLength(1); j++)
+            {
+                for (int i = 0; i < sea.GetLength(0); i++)
+                {
+                    int x = sea.GetLength(0) - 1 - j;
+                    int y = i;
+                    result[y, x] = sea[j, i];
+                }
+            }
+            return result;
+        }
+
+        private static char[,] HorisontalFlip(char[,] sea)
+        {
+            var result = new char[sea.GetLength(0), sea.GetLength(1)];
+            for (int j = 0; j < sea.GetLength(1); j++)
+            {
+                for (int i = 0; i < sea.GetLength(0); i++)
+                {
+                    int x = sea.GetLength(0) - 1 - i;
+                    int y = j;
+                    result[y, x] = sea[j, i];
+                }
+            }
+            return result;
+        }
+
+        private static char[,] VerticalFlip(char[,] sea)
+        {
+            var result = new char[sea.GetLength(0), sea.GetLength(1)];
+            for (int j = 0; j < sea.GetLength(1); j++)
+            {
+                for (int i = 0; i < sea.GetLength(0); i++)
+                {
+                    int x = i;
+                    int y = sea.GetLength(1) - 1 - j;
+                    result[y, x] = sea[j, i];
+                }
+            }
+            return result;
+        }
+
+        private static List<Pos> FindMonsters(char[,] sea, char[,] monster)
+        {
+            var monsters = new List<Pos>();
+            for (var x = 0; x < sea.GetLength(0) - monster.GetLength(1); x++)
+            {
+                for (var y = 0; y < sea.GetLength(1) - monster.GetLength(0); y++)
+                {
+                    if (CheckMonster(sea, monster, x, y))
+                    {
+                        var pos = new Pos(x, y);
+                        monsters.Add(pos);
+                        Console.WriteLine($"Monster at pos={pos}");
+                    }
+                }
+            }
+            return monsters;
+        }
+
+        private static bool CheckMonster(char[,] sea, char[,] monster, int x, int y)
+        {
+            var isMonster = true;
+            for (int j = 0; j < monster.GetLength(0) && isMonster; j++)
+            {
+                for (int i = 0; i < monster.GetLength(1) && isMonster; i++)
+                {
+                    if (monster[j, i] == '#')
+                    {
+                        isMonster = sea[x + i, y + j] == '#';
+                    }
+                }
+            }
+
+            return isMonster;
+        }
 
         Dictionary<Side, Pos> sideDiff = new Dictionary<Side, Pos>()
         { 
@@ -608,8 +726,18 @@ Tile 3079:
             tilePos.TryGetValue(pos + sideDiff[Side.Up], out var up);
             tilePos.TryGetValue(pos + sideDiff[Side.Left], out var left);
 
-            int count = up != null ? 1 : 0;
-            count += left != null ? 1 : 0;
+            while (!IsMatch())
+            {
+                if (TryRotations())
+                    break;
+                tile.HorizontalFlip();
+                if (TryRotations())
+                    break;
+                tile.HorizontalFlip(); // flip back
+                tile.VerticalFlip();
+                if (TryRotations())
+                    break;
+            }
 
             bool IsMatch()
             {
@@ -617,48 +745,21 @@ Tile 3079:
                 match &= up == null || tile.IsUp(up);
                 return match;
             }
-            
-            while (!IsMatch())
+
+            bool TryRotations()
             {
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 3; i++)
                 {
-
                     tile.Rotate90();
                     if (IsMatch())
                     {
-                        break;
+                        return true;
                     }
                 }
-                tile.HorizontalFlip();
-                if (IsMatch())
-                {
-                    break;
-                }
-                for (int i = 0; i < 4; i++)
-                {
-
-                    tile.Rotate90();
-                    if (IsMatch())
-                    {
-                        break;
-                    }
-                }
-                tile.HorizontalFlip(); // flip back
-                tile.VerticalFlip();
-                if (IsMatch())
-                {
-                    break;
-                }
-                for (int i = 0; i < 4; i++)
-                {
-
-                    tile.Rotate90();
-                    if (IsMatch())
-                    {
-                        break;
-                    }
-                }
+                tile.Rotate90();
+                return IsMatch();
             }
+
             if (tile.Neighbours.Inner.TryGetValue(Side.Right, out Tile right) && right != null)
             {
                 var rightPos = pos + sideDiff[Side.Right];
