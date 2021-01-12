@@ -612,7 +612,32 @@ Tile 3079:
 
             Console.WriteLine($"monsterCount={monsters.Count}");
 
+            // print the monsters
+            foreach (var pos in monsters)
+            {
+                for (int j = 0; j < monster.GetLength(0); j++)
+                {
+                    for (int i = 0; i < monster.GetLength(1); i++)
+                    {
+                        if (monster[j, i] == '#')
+                        {
+                            sea[pos.x + i, pos.y + j] = 'O';
+                        }
+                    }
+                }
+            }
+
             PrintSea(sea);
+
+            // count remaining #
+            var result = 0;
+            foreach (var c in sea)
+            {
+                if (c == '#')
+                    result++;
+            }
+
+            Assert.AreEqual(273, result);
         }
 
         private static void PrintSea(char[,] sea)
